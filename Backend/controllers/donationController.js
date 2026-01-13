@@ -1,24 +1,28 @@
 const donationService = require('../services/donation.service');
 const { validationResult } = require('express-validator');
 
-module.exports.createDonation = async (req, res) => {
+/* ================= CREATE DONATION ================= */
+module.exports.createDonation = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
+  const { itemType, quantity, condition, deliveryOption } = req.body;
+
   const donation = await donationService.createDonation({
     donorId: req.user._id,
-    itemType: req.body.itemType,
-    quantity: req.body.quantity,
-    condition: req.body.condition,
-    deliveryOption: req.body.deliveryOption
+    itemType,
+    quantity,
+    condition,
+    deliveryOption
   });
 
-  res.status(201).json(donation);
+  res.status(201).json({ donation });
 };
 
-module.exports.getMyDonations = async (req, res) => {
+/* ================= GET MY DONATIONS ================= */
+module.exports.getMyDonations = async (req, res, next) => {
   const donations = await donationService.getDonationsByDonor(req.user._id);
-  res.status(200).json(donations);
+  res.status(200).json({ donations });
 };

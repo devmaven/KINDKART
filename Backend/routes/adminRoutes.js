@@ -3,6 +3,7 @@ const router = express.Router();
 
 const adminController = require('../controllers/adminController');
 const { body, param } = require('express-validator');
+const { authAdmin } = require('../middlewares/auth.middleware'); 
 
 /**
  * ADMIN ROUTES

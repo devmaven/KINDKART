@@ -1,6 +1,21 @@
+const User = require('../models/user.model');
+const NgoProfile = require('../models/ngoprofile.model');
 const adminService = require('../services/admin.service');
 const { validationResult } = require('express-validator');
 
+/* ================= GET ALL USERS ================= */
+module.exports.getAllUsers = async (req, res) => {
+  const users = await User.find();
+  res.status(200).json(users);
+};
+
+/* ================= GET ALL NGOs ================= */
+module.exports.getAllNGOs = async (req, res) => {
+  const ngos = await NgoProfile.find();
+  res.status(200).json(ngos);
+};
+
+/* ================= APPROVE NGO ================= */
 module.exports.approveNGO = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -8,26 +23,25 @@ module.exports.approveNGO = async (req, res) => {
   }
 
   const ngo = await adminService.approveNGO({
-    ngoId: req.body.ngoId
+    ngoId: req.params.ngoId
   });
-  
-   
+
   res.status(200).json({
     message: 'NGO approved successfully',
     ngo
   });
 };
 
-module.exports.rejectNGO = async (req, res) => {
-  const { ngoId } = req.body;
-
-  await adminService.rejectNGO({ ngoId });
+/* ================= BLOCK USER ================= */
+module.exports.blockUser = async (req, res) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.userId,
+    { isLocked: true },
+    { new: true }
+  );
 
   res.status(200).json({
-    message: 'NGO rejected successfully'
+    message: 'User blocked successfully',
+    user
   });
 };
-
-module.exports.getAllNGOs = async (req, res) => {}
-module.exports.getAllUsers= async (req, res) => {}
-module.exports.blockUser = async (req, res) => {}.

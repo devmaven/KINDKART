@@ -1,55 +1,66 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true
-    },
-
-    phone: {
+const userSchema = new mongoose.Schema({
+  fullname: {
+    firstname: {
       type: String,
       required: true,
-      unique: true,
-      match: [/^[6-9]\d{9}$/, 'Invalid phone number']
+      minlength: [3, 'First name must be at least 3 characters long'],
     },
-
-    address: {
-      type: String
-    },
-
-    role: {
+    lastname: {
       type: String,
-      enum: ['donor', 'ngo', 'volunteer', 'receiver', 'admin'],
-      required: true
-    },
-
-    loginAttempts: {
-      type: Number,
-      default: 0
-    },
-
-    isLocked: {
-      type: Boolean,
-      default: false
+      minlength: [3, 'Last name must be at least 3 characters long'],
     }
   },
-  {
-    timestamps: true
-  }
-);
 
-// Generate JWT token
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    minlength: [5, 'Email must be at least 5 characters long'],
+    match: [/^\S+@\S+\.\S+$/, 'Invalid email address']
+  },
+
+  password: {
+    type: String,
+    required: true,
+    select: false
+  },
+
+  address: {
+    type: String
+  },
+
+  role: {
+    type: String,
+    enum: ['donor', 'ngo', 'volunteer', 'receiver', 'admin'],
+    required: true
+  },
+
+ });
+
+
+//  Generate JWT token
 userSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign(
-    { _id: this._id },
+  return jwt.sign(
+    { _id: this._id, role: this.role },
     process.env.JWT_SECRET,
     { expiresIn: '24h' }
   );
-  return token;
 };
 
-const User = mongoose.model('User', userSchema);
+//  Compare password (login)
+userSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
-module.exports = User;
+//  Hash password (register)
+userSchema.statics.hashPassword = async function (password) {
+  return await bcrypt.hash(password, 10);
+};
+
+const userModel = mongoose.model('User', userSchema);
+module.exports = userModel;

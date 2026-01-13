@@ -1,22 +1,32 @@
 const User = require('../models/user.model');
 const NgoProfile = require('../models/ngoprofile.model');
+const DonorProfile = require('../models/donorprofile.model');
+const VolunteerProfile = require('../models/volunteerprofile.model');
+const ReceiverProfile = require('../models/receiverprofile.model');
 
 module.exports.createUser = async ({
-  name,
-  phone,
+  firstname,
+  lastname,
+  email,
+  password,
   address,
   role
 }) => {
-  if (!name || !phone || !role) {
+  if (!firstname || !email || !password || !role) {
     throw new Error('All fields are required');
   }
 
   const user = await User.create({
-    name,
-    phone,
+    fullname: {
+           firstname,
+           lastname 
+        },
+    email,
+    password,
     address,
     role
   });
+console.log("User created in DB:", user);
 
   // create role profile
   if (role === 'donor') {

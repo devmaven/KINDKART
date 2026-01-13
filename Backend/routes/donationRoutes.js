@@ -3,7 +3,7 @@ const router = express.Router();
 const { body } = require("express-validator");
 
 const donationController = require('../controllers/donationController');
-// const authMiddleware = require('../middlewares/auth.middleware');
+const { authUser } = require('../middlewares/auth.middleware');
 
 // Create Donation
 router.post(
