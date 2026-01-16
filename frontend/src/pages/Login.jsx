@@ -45,12 +45,28 @@ export default function Login() {
           required
         />
 
-        <button style={styles.button}>Login</button>
+        <p style={{ textAlign: "right", marginBottom: "20px", marginTop:"5px" }}>
+        <Link to="/ForgotPassword" style={{ color: "#2563eb", fontSize: "13px" }}>
+        Forgot password?
+       </Link>
+        </p>
+
+
+        <button style={styles.button}><b>Login</b></button>
 
         <p style={styles.footerText}>
           Don’t have an account?{" "}
           <Link to="/register" style={styles.link}>Create Account</Link>
         </p>
+
+        {/* ✅ BACK TO HOME BUTTON */}
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          style={styles.homeButton}
+        >
+          ← Back to Home
+        </button>
       </form>
     </div>
   );
@@ -62,7 +78,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "linear-gradient(135deg, #2563eb, #16a34a)",
+    background: "linear-gradient(135deg, #74ffac 0%, #2bff95 100%)",
   },
   card: {
     background: "#fff",
@@ -84,11 +100,27 @@ const styles = {
   button: {
     width: "100%",
     padding: "12px",
-    background: "linear-gradient(90deg, #2563eb, #16a34a)",
+    background: "linear-gradient(90deg, #16a34a)",
     color: "#fff",
     border: "none",
     borderRadius: "12px",
+    cursor: "pointer",
   },
   footerText: { textAlign: "center", marginTop: "15px" },
   link: { color: "#2563eb", fontWeight: "600" },
+
+  /* 🔹 Back to Home button style */
+  homeButton: {
+  marginTop: "14px",
+  width: "100%",
+  background: "none",
+  border: "none",
+  padding: "0",
+  color: "#6b7280", // gray
+  cursor: "pointer",
+  fontSize: "14px",
+  fontWeight: "500",
+  textAlign: "center",
+  outline: "none",
+}
 };
