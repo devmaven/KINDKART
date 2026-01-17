@@ -1,42 +1,63 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../constant/api";
+import axios from "axios";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🔹 Later this will call backend API
-    alert("Check your email. Password reset link will be sent to your mail.");
+    try {
+      setLoading(true);
 
-    navigate("/login");
+      await axios.post(API_URL.FORGOT_PASSWORD, { email });
+
+      alert("Check your email. Password reset link has been sent.");
+      navigate("/login");
+    } catch (error) {
+      alert("Failed to send reset link. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={styles.page}>
-      <form onSubmit={handleSubmit} style={styles.card}>
-        <h2 style={styles.title}>Forgot Password</h2>
-        <p style={styles.subtitle}>
+    <div className="h-screen flex justify-center items-center bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)]">
+      <form
+        className="bg-white p-[35px] rounded-[16px] w-[360px] text-center"
+        onSubmit={handleSubmit}
+      >
+        <h2 className="text-[26px] font-[700]">Forgot Password</h2>
+
+        <p className="text-[14px] text-[#6b7280] mb-[20px]">
           Enter your email to receive a password reset link
         </p>
 
         <input
           type="email"
           placeholder="Enter your email"
-          style={styles.input}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db]"
         />
 
-        <button style={styles.button}><b>Send Reset Link</b></button>
+        <button
+          type="submit"
+          disabled={loading} // ✅ ADDED
+          className="w-full p-[12px] bg-[linear-gradient(90deg,#16a34a)] text-white rounded-[12px] cursor-pointer disabled:opacity-60"
+        >
+          <b>{loading ? "Sending..." : "Send Reset Link"}</b> {/* ✅ ADDED */}
+        </button>
 
         <button
           type="button"
           onClick={() => navigate("/login")}
-          style={styles.backButton}
+          className="mt-[15px] bg-none border-none text-[#6b7280] cursor-pointer text-[14px]"
         >
           ← Back to Login
         </button>
@@ -44,50 +65,3 @@ export default function ForgotPassword() {
     </div>
   );
 }
-
-const styles = {
-  page: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg,  #74ffac 0%, #2bff95 100%)",
-  },
-  card: {
-    background: "#fff",
-    padding: "35px",
-    borderRadius: "16px",
-    width: "360px",
-    textAlign: "center",
-  },
-  title: { fontSize: "26px", fontWeight: "700" },
-  subtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginBottom: "20px",
-  },
-  input: {
-    width: "100%",
-    padding: "12px",
-    marginBottom: "15px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-  },
-  button: {
-    width: "100%",
-    padding: "12px",
-    background: "linear-gradient(90deg, #16a34a)",
-    color: "#fff",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-  },
-  backButton: {
-    marginTop: "15px",
-    background: "none",
-    border: "none",
-    color: "#6b7280",
-    cursor: "pointer",
-    fontSize: "14px",
-  },
-};
