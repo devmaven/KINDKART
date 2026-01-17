@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../api";
+import {API_URL} from "../constant/api";
+import axios from "axios";
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,60 +12,73 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/users/login", { email, password });
+      const res = await axios.post(API_URL.LOGIN, { email, password });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.user.role);
 
       navigate("/");
-    } catch {
+    } catch{
       alert("Invalid credentials");
     }
   };
 
   return (
-    <div style={styles.page}>
-      <form onSubmit={handleSubmit} style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={styles.title}>Welcome Back</h2>
-          <p style={styles.subtitle}>Login to continue helping</p>
+    <div className="h-screen flex justify-center items-center bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)]">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-[35px] rounded-[16px] w-[360px]"
+      >
+        <div className="text-center mb-[20px]">
+          <h2 className="text-[26px] font-[700]">Welcome Back</h2>
+          <p className="text-[14px] text-[#6b7280]">
+            Login to continue helping
+          </p>
         </div>
 
-        <label style={styles.label}>Email</label>
+        <label className="text-[14px] font-[600]">Email</label>
         <input
           type="email"
-          style={styles.input}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db]"
         />
 
-        <label style={styles.label}>Password</label>
+        <label className="text-[14px] font-[600]">Password</label>
         <input
           type="password"
-          style={styles.input}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db]"
         />
 
-        <p style={{ textAlign: "right", marginBottom: "20px", marginTop:"5px" }}>
-        <Link to="/ForgotPassword" style={{ color: "#2563eb", fontSize: "13px" }}>
-        Forgot password?
-       </Link>
+        <p className="text-right mt-[5px] mb-[20px]">
+          <Link
+            to="/ForgotPassword"
+            className="text-[#2563eb] text-[13px]"
+          >
+            Forgot password?
+          </Link>
         </p>
 
+        <button
+          type="submit"
+          className="w-full p-[12px] bg-[linear-gradient(90deg,#16a34a)] text-white rounded-[12px] cursor-pointer"
+        >
+          <b>Login</b>
+        </button>
 
-        <button style={styles.button}><b>Login</b></button>
-
-        <p style={styles.footerText}>
+        <p className="text-center mt-[15px]">
           Don’t have an account?{" "}
-          <Link to="/register" style={styles.link}>Create Account</Link>
+          <Link to="/register" className="text-[#2563eb] font-[600]">
+            Create Account
+          </Link>
         </p>
 
-        {/* ✅ BACK TO HOME BUTTON */}
         <button
           type="button"
           onClick={() => navigate("/")}
-          style={styles.homeButton}
+          className="mt-[14px] w-full bg-none border-none p-0 text-[#6b7280] cursor-pointer text-[14px] font-[500] text-center outline-none"
         >
           ← Back to Home
         </button>
@@ -71,56 +86,3 @@ export default function Login() {
     </div>
   );
 }
-
-const styles = {
-  page: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg, #74ffac 0%, #2bff95 100%)",
-  },
-  card: {
-    background: "#fff",
-    padding: "35px",
-    borderRadius: "16px",
-    width: "360px",
-  },
-  header: { textAlign: "center", marginBottom: "20px" },
-  title: { fontSize: "26px", fontWeight: "700" },
-  subtitle: { fontSize: "14px", color: "#6b7280" },
-  label: { fontSize: "14px", fontWeight: "600" },
-  input: {
-    width: "100%",
-    padding: "12px",
-    marginBottom: "15px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-  },
-  button: {
-    width: "100%",
-    padding: "12px",
-    background: "linear-gradient(90deg, #16a34a)",
-    color: "#fff",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-  },
-  footerText: { textAlign: "center", marginTop: "15px" },
-  link: { color: "#2563eb", fontWeight: "600" },
-
-  /* 🔹 Back to Home button style */
-  homeButton: {
-  marginTop: "14px",
-  width: "100%",
-  background: "none",
-  border: "none",
-  padding: "0",
-  color: "#6b7280", // gray
-  cursor: "pointer",
-  fontSize: "14px",
-  fontWeight: "500",
-  textAlign: "center",
-  outline: "none",
-}
-};

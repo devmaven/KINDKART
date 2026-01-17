@@ -4,124 +4,77 @@ import { useNavigate } from "react-router-dom";
 const Home = () => {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-
-  const navigate = useNavigate(); // ✅ routing added
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
-
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
+    const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ✅ ONLY routing logic added
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    navigate("/register");
-  };
+  const handleLogin = () => navigate("/login");
+  const handleRegister = () => navigate("/register");
 
   return (
     <div
       className="relative min-h-screen font-serif overflow-hidden"
       style={{
-        minHeight: "100vh",
         background:
           "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%)",
       }}
     >
-      {/* Animated Background Elements */}
-      <div
+      {/* Floating Background Circles */}
+      <div className="absolute top-[10%] left-[5%] w-[200px] h-[200px] rounded-full"
         style={{
-          position: "absolute",
-          top: "10%",
-          left: "5%",
-          width: "200px",
-          height: "200px",
-          background:
-            "radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%)",
-          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(34,197,94,0.1) 0%, transparent 70%)",
           animation: "float 6s ease-in-out infinite",
         }}
       />
-      <div
+      <div className="absolute bottom-[15%] right-[10%] w-[150px] h-[150px] rounded-full"
         style={{
-          position: "absolute",
-          bottom: "15%",
-          right: "10%",
-          width: "150px",
-          height: "150px",
-          background:
-            "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)",
-          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)",
           animation: "float 8s ease-in-out infinite 1s",
         }}
       />
 
       {/* NAVBAR */}
       <header
-        className="flex items-center justify-between px-8 py-5"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? "translateY(0)" : "translateY(-30px)",
-          transition: "all 0.8s ease-out",
-          position: "relative",
-          zIndex: 10,
-        }}
+        className={`flex items-center justify-between px-8 py-5 relative z-10 transition-all duration-700 ease-out ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-7"
+        }`}
       >
-
+        {/* Logo */}
         <div className="flex items-center gap-2 text-lg font-bold">
           <span
+            className="text-[32px] font-extrabold tracking-[0.5px]"
             style={{
               background:
                 "linear-gradient(135deg, #065f46 0%, #10b981 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontSize: "32px",
-              fontWeight: "900",
-              letterSpacing: "0.5px",
-              textShadow: "0 2px 10px rgba(16, 185, 129, 0.2)",
+              textShadow: "0 2px 10px rgba(16,185,129,0.2)",
             }}
           >
-            KindKart 
+            KindKart
           </span>
         </div>
 
+        {/* Login Button */}
         <button
           onClick={handleLogin}
+          className="absolute top-[17px] right-[100px] z-[100] px-[35px] py-[15px] rounded-[12px] font-bold text-white transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.4)]"
           style={{
-            padding: "15px 35px",
             background:
               "linear-gradient(135deg, #059669 0%, #047857 100%)",
-            color: "white",
-            fontSize: "16px",
-            border: "none",
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 4px 20px rgba(5, 150, 105, 0.4)",
-            transition: "all 0.3s ease",
-            position: "absolute",
-            top: "17px",
-            right: "100px",
-            zIndex: 100,
           }}
           onMouseEnter={(e) => {
             e.target.style.transform = "translateY(-2px) scale(1.05)";
-            e.target.style.boxShadow =
-              "0 6px 25px rgba(5, 150, 105, 0.5)";
+            e.target.style.boxShadow = "0 6px 25px rgba(5,150,105,0.5)";
           }}
           onMouseLeave={(e) => {
             e.target.style.transform = "translateY(0) scale(1)";
-            e.target.style.boxShadow =
-              "0 4px 20px rgba(5, 150, 105, 0.4)";
+            e.target.style.boxShadow = "0 4px 20px rgba(5,150,105,0.4)";
           }}
         >
           Login
@@ -130,26 +83,20 @@ const Home = () => {
 
       {/* LEFT CONTENT */}
       <div
+        className="ml-[100px] mt-[60px] max-w-[500px] transition-all duration-1000 ease-out delay-300"
         style={{
-          marginLeft: "100px",
-          marginTop: "60px",
-          maxWidth: "500px",
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? "translateX(0)" : "translateX(-50px)",
-          transition: "all 1s ease-out 0.3s",
         }}
       >
         <h1
+          className="mb-[20px] font-extrabold leading-[1.1]"
           style={{
             fontSize: "3.5rem",
-            lineHeight: "1.1",
-            fontWeight: "800",
             background:
               "linear-gradient(135deg, #065f46 0%, #10b981 50%, #34d399 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            marginBottom: "20px",
           }}
         >
           Your <br />
@@ -158,11 +105,9 @@ const Home = () => {
         </h1>
 
         <p
+          className="mb-[15px] text-[1.9rem] italic"
           style={{
-            fontSize: "1.9rem",
-            fontStyle: "italic",
             color: "#047857",
-            marginBottom: "15px",
             animation: "fadeIn 1s ease-out 1.2s backwards",
           }}
         >
@@ -170,36 +115,24 @@ const Home = () => {
         </p>
 
         <div
+          className="flex items-center gap-[12px] mb-[35px]"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            marginBottom: "35px",
             animation: "fadeIn 1s ease-out 1.5s backwards",
           }}
         >
-          <div style={{ height: "2px", width: "45px", background: "#10b981" }} />
-          <p style={{ color: "#059669", fontSize: "1.25rem" }}>
+          <div className="h-[2px] w-[45px]" style={{ background: "#10b981" }} />
+          <p className="text-[1.25rem]" style={{ color: "#059669" }}>
             Every contribution creates impact.
           </p>
         </div>
 
+        {/* Register Button */}
         <button
           onClick={handleRegister}
+          className="px-[38px] py-[18px] rounded-[12px] font-bold text-white shadow-[0_8px_30px_rgba(16,185,129,0.4)] relative overflow-hidden transition-all duration-400"
           style={{
-            padding: "18px 38px",
             background:
               "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-            color: "white",
-            fontSize: "16px",
-            border: "none",
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 8px 30px rgba(16, 185, 129, 0.4)",
-            transition: "all 0.4s ease",
-            position: "relative",
-            overflow: "hidden",
             animation: "fadeIn 1s ease-out 1.8s backwards",
           }}
         >
@@ -208,26 +141,18 @@ const Home = () => {
 
         {/* Floating Badge */}
         <div
+          className="mt-[35px] p-[15px_25px] rounded-[12px] max-w-[240px]"
           style={{
-            marginTop: "35px",
-            background: "rgba(255, 255, 255, 0.95)",
-            padding: "15px 25px",
-            borderRadius: "12px",
-            boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
-            animation:
-              "float 3s ease-in-out infinite, fadeIn 1s ease-out 2s backwards",
+            background: "rgba(255,255,255,0.95)",
+            boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
             backdropFilter: "blur(10px)",
-            maxWidth: "240px",
+            animation: "float 3s ease-in-out infinite, fadeIn 1s ease-out 2s backwards",
           }}
         >
-          <div
-            style={{ fontSize: "0.75rem", color: "#059669", marginBottom: "4px" }}
-          >
+          <div className="text-[0.75rem] mb-[4px]" style={{ color: "#059669" }}>
             Making a difference
           </div>
-          <div
-            style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#065f46" }}
-          >
+          <div className="text-[1.1rem] font-bold" style={{ color: "#065f46" }}>
             Together We Can
           </div>
         </div>
@@ -235,32 +160,23 @@ const Home = () => {
 
       {/* RIGHT IMAGE */}
       <div
+        className="absolute top-[80px] right-[120px] w-[550px] h-[650px] rounded-[25px] overflow-hidden shadow-[0_20px_60px_rgba(16,185,129,0.3)] transition-all duration-100 ease-out"
         style={{
-          position: "absolute",
-          top: "80px",
-          right: "120px",
-          width: "550px",
-          height: "650px",
-          borderRadius: "25px",
-          overflow: "hidden",
-          boxShadow: "0 20px 60px rgba(16, 185, 129, 0.3)",
+          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
           opacity: isVisible ? 1 : 0,
           transform: isVisible
             ? `translateX(0) translateY(${scrollY * 0.1}px)`
             : "translateX(50px)",
-          transition: "opacity 1s ease-out 0.5s, transform 0.1s ease-out",
-          background:
-            "linear-gradient(135deg, #10b981 0%, #059669 100%)",
         }}
       >
         <img
           src="img2.jpg"
           alt="Impact"
-          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          className="w-full h-full object-contain"
         />
       </div>
 
-      {/* CSS Animations */}
+      {/* Keyframe Animations */}
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0); }

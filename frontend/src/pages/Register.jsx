@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../api";
+import {API_URL} from "../constant/api";
+import axios from "axios";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -13,15 +14,16 @@ export default function Register() {
     address: "",
     role: "donor",
   });
-
+  
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    console.log("hello",form)
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/users/register", {
+      const res = await axios.post(API_URL.REGISTER, {
         fullname: {
           firstname: form.firstname,
           lastname: form.lastname,
@@ -29,72 +31,82 @@ export default function Register() {
         email: form.email,
         password: form.password,
         address: form.address,
-        role: form.role,
+        role: "admin",
       });
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.user.role);
+      if(res.status===201){
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", res.data.user.role);
 
       navigate("/");
-    } catch {
+      }
+    } catch(error){
+      console.error(error)
       alert("Registration failed");
     }
   };
 
   return (
-    <div style={styles.page}>
-      <form onSubmit={handleSubmit} style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={styles.title}>Join Our Cause</h2>
-          <p style={styles.subtitle}>Create an account to start helping</p>
+    <div className="max-h-screen  w-full grid grid-cols-12">
+      <div className="left col-span-6 flex justify-center items-center bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)] p-12">
+
+      
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-[35px] rounded-lg w-[480px]"
+      >
+        <div className="text-center mb-[20px]">
+          <h2 className="text-[26px] font-[700]">Join Our Cause</h2>
+          <p className="text-[14px] text-[#6b7280]">
+            Create an account to start helping
+          </p>
         </div>
 
-        <label style={styles.label}>First Name</label>
+        <label className="text-[14px] font-[600]">First Name</label>
         <input
           name="firstname"
-          style={styles.input}
           onChange={handleChange}
           required
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db] outline-none"
         />
 
-        <label style={styles.label}>Last Name</label>
+        <label className="text-[14px] font-[600]">Last Name</label>
         <input
           name="lastname"
-          style={styles.input}
           onChange={handleChange}
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db] outline-none"
         />
 
-        <label style={styles.label}>Email</label>
+        <label className="text-[14px] font-[600]">Email</label>
         <input
           type="email"
           name="email"
-          style={styles.input}
           onChange={handleChange}
           required
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db] outline-none"
         />
 
-        <label style={styles.label}>Password</label>
+        <label className="text-[14px] font-[600]">Password</label>
         <input
           type="password"
           name="password"
-          style={styles.input}
           onChange={handleChange}
           required
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db] outline-none"
         />
 
-        <label style={styles.label}>Address</label>
+        <label className="text-[14px] font-[600]">Address</label>
         <input
           name="address"
-          style={styles.input}
           onChange={handleChange}
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db] outline-none"
         />
 
-        <label style={styles.label}>Role</label>
+        <label className="text-[14px] font-[600]">Role</label>
         <select
           name="role"
           value={form.role}
           onChange={handleChange}
-          style={styles.input}
+          className="w-full p-[12px] mb-[15px] rounded-[10px] border border-[#d1d5db] outline-none"
         >
           <option value="donor">Donor</option>
           <option value="ngo">NGO</option>
@@ -102,106 +114,30 @@ export default function Register() {
           <option value="volunteer">Volunteer</option>
         </select>
 
-        <button style={styles.button}><b>Create Account</b></button>
+        <button
+          type="submit"
+          className="w-full p-[12px] bg-[linear-gradient(90deg,#16a34a)] text-white rounded-[12px] cursor-pointer"
+        >
+          <b>Create Account</b>
+        </button>
 
-        <p style={styles.footerText}>
+        <p className="text-center mt-[15px]">
           Already have an account?{" "}
-          <Link to="/login" style={styles.link}>
+          <Link to="/login" className="text-[#2563eb] font-[600]">
             Login
           </Link>
         </p>
 
-          <button
-            type="button"
-                   onClick={() => navigate("/")}
-             style={styles.homeButton}
-            >
-             ← Back to Home
-          </button>
-
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="mt-[14px] w-full bg-none border-none p-0 text-[#6b7280] cursor-pointer text-[14px] font-[500] text-center outline-none"
+        >
+          ← Back to Home
+        </button>
       </form>
+      </div>
+      <div className="right col-span-6 flex bg-center bg-cover bg-[url(https://images.unsplash.com/photo-1710093072228-8c3129f27357?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)] overflow-hidden" ></div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg,  #74ffac 0%, #2bff95 100%)",
-  },
-
-  card: {
-    background: "#fff",
-    padding: "35px",
-    borderRadius: "16px",
-    width: "360px",
-  },
-
-  header: {
-    textAlign: "center",
-    marginBottom: "20px",
-  },
-
-  title: {
-    fontSize: "26px",
-    fontWeight: "700",
-  },
-
-  subtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-  },
-
-  label: {
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-
-  input: {
-    width: "100%",
-    padding: "12px",
-    marginBottom: "15px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-    outline: "none",
-  },
-
-  button: {
-    width: "100%",
-    padding: "12px",
-    background: "linear-gradient(90deg, #16a34a)",
-    color: "#fff",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-  },
-
-  footerText: {
-    textAlign: "center",
-    marginTop: "15px",
-  },
-
-  link: {
-    color: "#2563eb",
-    fontWeight: "600",
-  },
-
-  homeButton: {
-  marginTop: "14px",
-  width: "100%",
-  background: "none",
-  border: "none",
-  padding: "0",
-  color: "#6b7280", // gray
-  cursor: "pointer",
-  fontSize: "14px",
-  fontWeight: "500",
-  textAlign: "center",
-  outline: "none",
-},
-
-
-};
