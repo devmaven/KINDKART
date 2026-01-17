@@ -15,13 +15,13 @@ const App = () =>
     <div>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/Login' element={<Login />} /> 
-        <Route path='/Register' element={<Register />} />
-        <Route path="/ForgotPassword" element={<ForgotPassword />} />  
-        <Route path="/ResetPassword/:token" element={<ResetPassword />} />
-        <Route path='/DonorDash' element={<DonorDash />} /> 
-        <Route path='/ReceiverDash' element={<ReceiverDash />} />
-        <Route path='/Logout' element={<Logout />} /> 
+        <Route path='/login' element={<Login />} /> 
+        <Route path='/gegister' element={<Register />} />
+        <Route path="/forgot_password" element={<ForgotPassword />} />  
+        <Route path="/reset_password" element={<ResetPassword />} />
+        <Route path='/donor_dash' element={<DonorDash />} /> 
+        <Route path='/receiver_dash' element={<ReceiverDash />} />
+        <Route path='/logout' element={<Logout />} /> 
       </Routes>
     </div>
   )
