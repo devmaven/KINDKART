@@ -5,6 +5,7 @@ export const API_URL = {
     LOGIN:`${BASE_API}/auth/login`,
     FORGOT_PASSWORD:`${BASE_API}/auth/forgot-password`,
     RESET_PASSWORD:`${BASE_API}/auth/reset-password`,
+    LOGOUT:`${BASE_API}/auth/logout`,
     
 
 }
