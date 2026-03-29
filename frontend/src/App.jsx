@@ -7,6 +7,9 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import DonorDash from './pages/DonorDash'
 import ReceiverDash from './pages/ReceiverDash'
+import NGODash from './pages/NGODash'
+import VolunteerDash from './pages/VolunteerDash'
+import AdminDash from './pages/AdminDash'
 import Logout from './pages/Logout'
 
 const App = () => 
@@ -21,6 +24,9 @@ const App = () =>
         <Route path="/ResetPassword/:token" element={<ResetPassword />} />
         <Route path='/DonorDash' element={<DonorDash />} /> 
         <Route path='/ReceiverDash' element={<ReceiverDash />} />
+        <Route path='/NGODash' element={<NGODash />} />
+        <Route path='/VolunteerDash' element={<VolunteerDash />} />
+        <Route path='/AdminDash' element={<AdminDash />} />
         <Route path='/Logout' element={<Logout />} /> 
       </Routes>
     </div>
