@@ -35,7 +35,8 @@ export default function Register() {
       });
       if(res.status===201){
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("role", res.data.user.role);
+        localStorage.setItem("role", JSON.stringify(res.data.user));
+      localStorage.setItem("role", res.data.user.role);
 
       navigate("/");
       }

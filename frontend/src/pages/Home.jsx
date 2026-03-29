@@ -1,10 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/auth.context";
+import axios from 'axios'
+import {API_URL} from "../constant/api.js"
 
 const Home = () => {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+
   const navigate = useNavigate();
+
+  const {user, setUser} = useContext(AuthContext)
+
+  console.log('sxs', user)
 
   useEffect(() => {
     setIsVisible(true);
@@ -12,6 +20,32 @@ const Home = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await axios.get(API_URL.LOGOUT, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("user");
+      setUser(null);
+      navigate("/login");
+    }
+  } catch (error) {
+    console.error(
+      "Logout error:",
+      error.response?.data || error.message
+    );
+  }
+};
+
 
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
@@ -61,7 +95,24 @@ const Home = () => {
         </div>
 
         {/* Login Button */}
-        <button
+     {user ? <button
+          onClick={handleLogout}
+          className="absolute top-[17px] right-[100px] z-[100] px-[35px] py-[15px] rounded-[12px] font-bold text-white transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.4)]"
+          style={{
+            background:
+              "linear-gradient(135deg, #059669 0%, #047857 100%)",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "translateY(-2px) scale(1.05)";
+            e.target.style.boxShadow = "0 6px 25px rgba(5,150,105,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "translateY(0) scale(1)";
+            e.target.style.boxShadow = "0 4px 20px rgba(5,150,105,0.4)";
+          }}
+        >
+          Logout
+        </button>:<button
           onClick={handleLogin}
           className="absolute top-[17px] right-[100px] z-[100] px-[35px] py-[15px] rounded-[12px] font-bold text-white transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.4)]"
           style={{
@@ -78,7 +129,7 @@ const Home = () => {
           }}
         >
           Login
-        </button>
+        </button>}
       </header>
 
       {/* LEFT CONTENT */}

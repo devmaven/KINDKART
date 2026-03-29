@@ -18,6 +18,7 @@ const App = () =>
     <div>
       <Routes>
         <Route path='/' element={<Home />} />
+
         <Route path='/Login' element={<Login />} /> 
         <Route path='/Register' element={<Register />} />
         <Route path="/ForgotPassword" element={<ForgotPassword />} />  
@@ -28,6 +29,7 @@ const App = () =>
         <Route path='/VolunteerDash' element={<VolunteerDash />} />
         <Route path='/AdminDash' element={<AdminDash />} />
         <Route path='/Logout' element={<Logout />} /> 
+
       </Routes>
     </div>
   )

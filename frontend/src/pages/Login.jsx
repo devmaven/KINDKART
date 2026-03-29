@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {API_URL} from "../constant/api";
 import axios from "axios";
+import { useContext } from "react";
+import { AuthContext } from "../context/auth.context";
 
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -15,8 +18,11 @@ export default function Login() {
       const res = await axios.post(API_URL.LOGIN, { email, password });
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("role", res.data.user.role);
 
+       setUser(res.data.user);
+       
       navigate("/");
     } catch{
       alert("Invalid credentials");

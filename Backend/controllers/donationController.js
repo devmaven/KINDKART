@@ -3,19 +3,21 @@ const { validationResult } = require('express-validator');
 
 /* ================= CREATE DONATION ================= */
 module.exports.createDonation = async (req, res, next) => {
+  console.log("BODY:", req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { itemType, quantity, condition, deliveryOption } = req.body;
+  const { itemType, quantity, condition, deliveryOption, address } = req.body;
 
   const donation = await donationService.createDonation({
     donorId: req.user._id,
     itemType,
     quantity,
     condition,
-    deliveryOption
+    deliveryOption,
+    address
   });
 
   res.status(201).json({ donation });
