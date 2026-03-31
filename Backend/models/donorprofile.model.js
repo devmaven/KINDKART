@@ -10,7 +10,7 @@ const donationSchema = new mongoose.Schema(
 
     itemType: {
       type: String,
-      enum: ['books', 'clothes', 'food', 'cycles'],
+      enum: ['books', 'clothes', 'cycles'],
       required: true
     },
 
@@ -28,7 +28,7 @@ const donationSchema = new mongoose.Schema(
 
     deliveryOption: {
       type: String,
-      enum: ['pickup', 'drop-off'],
+      enum: ['pickup', 'drop_off'],
       required: true
     },
 

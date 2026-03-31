@@ -11,7 +11,8 @@ module.exports.createUser = async ({
   email,
   password,
   address,
-  role
+  role,
+  itemType
 }) => {
   if (!firstname || !email || !password || !role) {
     throw new Error('All fields are required');
@@ -27,12 +28,12 @@ module.exports.createUser = async ({
     address,
     role
   });
-console.log("User created in DB:", user);
+console.log("User created in DB:",itemType);
 
   // create role profile
-  if (role === 'donor') {
-    await DonorProfile.create({ userId: user._id });
-  }
+  // if (role === 'donor') {
+  //   await DonorProfile.create({ userId: user._id });
+  // }
 
   if (role === 'ngo') {
     await NgoProfile.create({ userId: user._id });

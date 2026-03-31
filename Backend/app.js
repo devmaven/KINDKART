@@ -23,6 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
 // Routes
 app.get('/', (req, res) => {
     res.send('Hello World');

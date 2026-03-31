@@ -10,7 +10,7 @@ const receiverRequestSchema = new mongoose.Schema(
 
     itemType: {
       type: String,
-      enum: ['books', 'clothes', 'food', 'cycles'],
+      enum: ['books', 'clothes', 'cycles'],
       required: true
     },
 

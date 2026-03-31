@@ -19,11 +19,6 @@ const ngoProfileSchema = new mongoose.Schema(
     },
 
     documents: [String],
-
-    isVerified: {
-      type: Boolean,
-      default: true
-    }
   },
   {
     timestamps: true

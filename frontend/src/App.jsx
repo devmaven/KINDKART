@@ -7,6 +7,8 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import DonorDash from './pages/DonorDash'
 import ReceiverDash from './pages/ReceiverDash'
+import VolunteerDash from './pages/VolunteerDash'
+import NGODash from './pages/NGODash'
 import Logout from './pages/Logout'
 
 const App = () => 
@@ -15,13 +17,15 @@ const App = () =>
     <div>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/login' element={<Login />} /> 
-        <Route path='/register' element={<Register />} />
-        <Route path="/forgot_password" element={<ForgotPassword />} />  
-        <Route path="/reset_password" element={<ResetPassword />} />
-        <Route path='/donor_dash' element={<DonorDash />} /> 
-        <Route path='/receiver_dash' element={<ReceiverDash />} />
-        <Route path='/logout' element={<Logout />} /> 
+        <Route path='/Login' element={<Login />} /> 
+        <Route path='/Register' element={<Register />} />
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />  
+        <Route path="/ResetPassword" element={<ResetPassword />} />
+        <Route path='/DonorDash' element={<DonorDash />} /> 
+        <Route path='/ReceiverDash' element={<ReceiverDash />} />
+        <Route path='/VolunteerDash' element={<VolunteerDash />} />
+        <Route path='/NGODash' element={<NGODash />} />
+        <Route path='/Logout' element={<Logout />} /> 
       </Routes>
     </div>
   )
