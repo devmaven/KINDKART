@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {Link} from 'react-router-dom'
 import { Heart, Package, MapPin, Clock, CheckCircle, AlertCircle, User, LogOut, Search, Filter, Truck, Navigation, Phone, Mail, Award, TrendingUp, RefreshCw } from 'lucide-react';
+import {API_URL} from "../constant/api"
+import axios from 'axios';
 
 const VolunteerDash = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   const [showEscalate, setShowEscalate] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [tasks, setTasks] = useState([]);
+const user = localStorage.getItem("user");
+const token = localStorage.getItem("token");
+const { fullname } = JSON.parse(user);
+ let avatar = (fullname?.firstname[0] + fullname?.lastname[0]).toUpperCase();
+
 
   const stats = [
     { label: 'Assigned Tasks', value: '5', icon: Package, color: 'bg-blue-500' },
@@ -14,50 +23,7 @@ const VolunteerDash = () => {
     { label: 'Total Points', value: '350', icon: Award, color: 'bg-purple-500' }
   ];
 
-  const tasks = [
-    {
-      id: 'TSK001',
-      type: 'Pickup',
-      donor: 'John Doe',
-      location: 'Sector 29, Gurugram',
-      item: 'Winter Clothes',
-      quantity: 15,
-      status: 'assigned',
-      priority: 'high',
-      ngo: 'Hope Care Foundation',
-      phone: '+91 98765 43210',
-      date: '2025-02-19',
-      time: '10:00 AM'
-    },
-    {
-      id: 'TSK002',
-      type: 'Delivery',
-      receiver: 'Community Center A',
-      location: 'DLF Phase 2, Gurugram',
-      item: 'Educational Books',
-      quantity: 25,
-      status: 'collected',
-      priority: 'medium',
-      ngo: 'Hope Care Foundation',
-      phone: '+91 98765 43211',
-      date: '2025-02-19',
-      time: '2:00 PM'
-    },
-    {
-      id: 'TSK003',
-      type: 'Pickup',
-      donor: 'Sarah Smith',
-      location: 'Golf Course Road, Gurugram',
-      item: 'Food Items',
-      quantity: 10,
-      status: 'in-transit',
-      priority: 'high',
-      ngo: 'Hope Care Foundation',
-      phone: '+91 98765 43212',
-      date: '2025-02-19',
-      time: '4:00 PM'
-    }
-  ];
+  
 
   const activityLog = [
     { id: 'TSK028', action: 'Delivered', item: 'Medical Supplies', date: '2025-02-18', time: '5:30 PM', points: 15 },
@@ -105,6 +71,31 @@ const VolunteerDash = () => {
     // Task status update logic
   };
 
+
+    const getMyTasks = async () => {
+      try {
+        const res = await axios.get(
+          API_URL.VOLUNTEER_MY_TASKS,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (res.status === 200) {
+          const data = res?.data?.data;
+          console.log("ds", data);
+          setTasks(data);
+        }
+      } catch (error) {
+        alert(error);
+      }
+    };
+
+    useEffect(()=>{
+      getMyTasks();
+    },[])
+console.log('vol',tasks)
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
       {/* Header */}
@@ -122,7 +113,7 @@ const VolunteerDash = () => {
                 <p className="text-sm text-gray-500">Volunteer Dashboard</p>
               </div>
             </div>
-           
+
             <div className="flex items-center space-x-4">
               <button className="relative p-2 hover:bg-emerald-50 rounded-full transition-colors">
                 <Mail className="w-6 h-6 text-gray-600" />
@@ -132,16 +123,21 @@ const VolunteerDash = () => {
               </button>
               <div className="flex items-center space-x-3 bg-emerald-50 px-4 py-2 rounded-full">
                 <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  RK
+                  {avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">Rahul Kumar</p>
+                  <p className="font-semibold text-gray-800">
+                    {fullname?.firstname+" "+ fullname?.lastname}
+                  </p>
                   <p className="text-xs text-gray-500">Verified Volunteer</p>
                 </div>
               </div>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <Link
+                to="/logout"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
                 <LogOut className="w-5 h-5 text-gray-600" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -154,7 +150,10 @@ const VolunteerDash = () => {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-2">Welcome back, Rahul! 🚚</h2>
-            <p className="text-emerald-50 mb-6">Thank you for being a hero! Your efforts make a real difference in our community.</p>
+            <p className="text-emerald-50 mb-6">
+              Thank you for being a hero! Your efforts make a real difference in
+              our community.
+            </p>
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
                 <Award className="w-5 h-5" />
@@ -180,7 +179,9 @@ const VolunteerDash = () => {
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">{stat.value}</h3>
+              <h3 className="text-3xl font-bold text-gray-800 mb-1">
+                {stat.value}
+              </h3>
               <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
           ))}
@@ -196,9 +197,14 @@ const VolunteerDash = () => {
           </div>
           <div className="space-y-3">
             {notifications.map((notif, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+              <div
+                key={index}
+                className="flex items-start space-x-3 p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+              >
                 <div className="flex-1">
-                  <p className="text-sm text-gray-800 font-semibold">{notif.message}</p>
+                  <p className="text-sm text-gray-800 font-semibold">
+                    {notif.message}
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
                 </div>
               </div>
@@ -209,17 +215,20 @@ const VolunteerDash = () => {
         {/* Navigation Tabs */}
         <div className="bg-white rounded-xl shadow-md mb-8 p-2">
           <div className="flex space-x-2">
-            {['overview', 'my-tasks', 'activity-log', 'profile'].map((tab) => (
+            {["overview", "my-tasks", "activity-log", "profile"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                   activeTab === tab
-                    ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                {tab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                {tab
+                  .split("-")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
               </button>
             ))}
           </div>
@@ -228,7 +237,9 @@ const VolunteerDash = () => {
         {/* Assigned Tasks Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-xl font-bold text-gray-800">My Assigned Tasks</h3>
+            <h3 className="text-xl font-bold text-gray-800">
+              My Assigned Tasks
+            </h3>
             <div className="flex space-x-3">
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Search className="w-5 h-5 text-gray-600" />
@@ -238,19 +249,35 @@ const VolunteerDash = () => {
               </button>
             </div>
           </div>
-         
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Task ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Type</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Item</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Location</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Schedule</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Priority</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Actions</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Task ID
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Type
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Item
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Location
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Schedule
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Priority
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -260,40 +287,55 @@ const VolunteerDash = () => {
                     className="hover:bg-emerald-50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-emerald-600">{task.id}</span>
+                      <span className="font-semibold text-emerald-600">
+                        {task.taskId}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        {task.type === 'Pickup' ?
-                          <Package className="w-4 h-4 text-blue-500" /> :
+                        {task.type === "Pickup" ? (
+                          <Package className="w-4 h-4 text-blue-500" />
+                        ) : (
                           <Truck className="w-4 h-4 text-orange-500" />
-                        }
+                        )}
                         <span className="text-gray-800">{task.type}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-800">{task.item}</span>
-                      <p className="text-xs text-gray-500">Qty: {task.quantity}</p>
+                      <span className="text-gray-800">{task.taskName}</span>
+                      <p className="text-xs text-gray-500">
+                        Qty: {task.quantity}
+                      </p>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-start space-x-2">
                         <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <span className="text-sm text-gray-600">{task.location}</span>
+                        <span className="text-sm text-gray-600">
+                          {task.location}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-800">{task.date}</p>
+                      <p className="text-sm text-gray-800">{new Date(task.scheduledDate).toLocaleDateString()}</p>
                       <p className="text-xs text-gray-500">{task.time}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityBadge(task.priority)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityBadge(
+                          task.priority
+                        )}`}
+                      >
                         {task.priority}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(task.status)}
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(task.status)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(
+                            task.status
+                          )}`}
+                        >
                           {task.status}
                         </span>
                       </div>
@@ -339,17 +381,28 @@ const VolunteerDash = () => {
             </div>
             <div className="p-6 space-y-4">
               {activityLog.map((log, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+                >
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-semibold text-emerald-600">{log.id}</span>
-                      <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">{log.action}</span>
+                      <span className="font-semibold text-emerald-600">
+                        {log.id}
+                      </span>
+                      <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                        {log.action}
+                      </span>
                     </div>
                     <p className="text-sm text-gray-800">{log.item}</p>
-                    <p className="text-xs text-gray-500">{log.date} at {log.time}</p>
+                    <p className="text-xs text-gray-500">
+                      {log.date} at {log.time}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-purple-600">+{log.points}</p>
+                    <p className="text-lg font-bold text-purple-600">
+                      +{log.points}
+                    </p>
                     <p className="text-xs text-gray-500">points</p>
                   </div>
                 </div>
@@ -361,20 +414,30 @@ const VolunteerDash = () => {
           <div className="space-y-6">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 hover:shadow-lg transition-all cursor-pointer">
               <Navigation className="w-8 h-8 text-blue-600 mb-3" />
-              <h4 className="font-bold text-gray-800 mb-2">Navigate to Location</h4>
-              <p className="text-sm text-gray-600">Get directions to your next pickup or delivery</p>
+              <h4 className="font-bold text-gray-800 mb-2">
+                Navigate to Location
+              </h4>
+              <p className="text-sm text-gray-600">
+                Get directions to your next pickup or delivery
+              </p>
             </div>
-           
+
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200 hover:shadow-lg transition-all cursor-pointer">
               <Phone className="w-8 h-8 text-green-600 mb-3" />
               <h4 className="font-bold text-gray-800 mb-2">Contact Support</h4>
-              <p className="text-sm text-gray-600">Need help? Reach out to NGO coordinators</p>
+              <p className="text-sm text-gray-600">
+                Need help? Reach out to NGO coordinators
+              </p>
             </div>
-           
+
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 hover:shadow-lg transition-all cursor-pointer">
               <Award className="w-8 h-8 text-purple-600 mb-3" />
-              <h4 className="font-bold text-gray-800 mb-2">View Achievements</h4>
-              <p className="text-sm text-gray-600">Check your volunteer badges and rewards</p>
+              <h4 className="font-bold text-gray-800 mb-2">
+                View Achievements
+              </h4>
+              <p className="text-sm text-gray-600">
+                Check your volunteer badges and rewards
+              </p>
             </div>
           </div>
         </div>
@@ -384,50 +447,68 @@ const VolunteerDash = () => {
       {showTaskDetails && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Task Details - {selectedTask.id}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+              Task Details - {selectedTask.id}
+            </h3>
             <div className="space-y-4">
               <div className="bg-emerald-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Task Type</p>
-                <p className="text-lg font-semibold text-gray-800">{selectedTask.type}</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {selectedTask.type}
+                </p>
               </div>
-             
+
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Item Details</p>
-                <p className="text-lg font-semibold text-gray-800">{selectedTask.item} (×{selectedTask.quantity})</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {selectedTask.item} (×{selectedTask.quantity})
+                </p>
               </div>
 
               <div className="bg-purple-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Location</p>
-                <p className="text-sm font-semibold text-gray-800">{selectedTask.location}</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {selectedTask.location}
+                </p>
               </div>
 
               <div className="bg-orange-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Contact</p>
-                <p className="text-sm font-semibold text-gray-800">{selectedTask.phone}</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {selectedTask.phone}
+                </p>
               </div>
 
               <div className="bg-teal-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Scheduled Time</p>
-                <p className="text-sm font-semibold text-gray-800">{selectedTask.date} at {selectedTask.time}</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {selectedTask.date} at {selectedTask.time}
+                </p>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-3">Update Status</p>
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => updateTaskStatus(selectedTask.id, 'collected')}
+                    onClick={() =>
+                      updateTaskStatus(selectedTask.id, "collected")
+                    }
                     className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm font-semibold"
                   >
                     Mark Collected
                   </button>
                   <button
-                    onClick={() => updateTaskStatus(selectedTask.id, 'in-transit')}
+                    onClick={() =>
+                      updateTaskStatus(selectedTask.id, "in-transit")
+                    }
                     className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
                   >
                     In Transit
                   </button>
                   <button
-                    onClick={() => updateTaskStatus(selectedTask.id, 'delivered')}
+                    onClick={() =>
+                      updateTaskStatus(selectedTask.id, "delivered")
+                    }
                     className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold col-span-2"
                   >
                     Mark Delivered
@@ -442,9 +523,7 @@ const VolunteerDash = () => {
                 >
                   Close
                 </button>
-                <button
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2"
-                >
+                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2">
                   <Navigation className="w-4 h-4" />
                   <span>Navigate</span>
                 </button>
@@ -458,10 +537,14 @@ const VolunteerDash = () => {
       {showEscalate && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Report Issue - {selectedTask.id}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+              Report Issue - {selectedTask.id}
+            </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Issue Type</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Issue Type
+                </label>
                 <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
                   <option>Cannot reach location</option>
                   <option>Contact not responding</option>
@@ -470,9 +553,11 @@ const VolunteerDash = () => {
                   <option>Other</option>
                 </select>
               </div>
-             
+
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Description
+                </label>
                 <textarea
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
@@ -481,7 +566,9 @@ const VolunteerDash = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Action Required</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Action Required
+                </label>
                 <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
                   <option>Reassign to another volunteer</option>
                   <option>Reschedule pickup/delivery</option>

@@ -31,6 +31,6 @@ const receiverRequestSchema = new mongoose.Schema(
   }
 );
 
-const ReceiverRequest = mongoose.model('ReceiverRequest', receiverRequestSchema);
+const ReceiverRequest = mongoose.model('ReceiverRequests', receiverRequestSchema);
 
 module.exports = ReceiverRequest;

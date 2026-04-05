@@ -1,11 +1,72 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Heart, Gift, Bell, Clock, CheckCircle, Package, User, LogOut, Plus, Search, Filter, FileText, Truck } from 'lucide-react';
 import { Link } from "react-router-dom";
+import {API_URL} from "../constant/api"
+import axios from 'axios';
 
 const ReceiverDash = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [availDonations,setAvailDonations]=useState([])
+  const user = localStorage.getItem("user");
+  const token = localStorage.getItem("token");
+    const { fullname } = JSON.parse(user);
+
+    let avatar = (fullname?.firstname[0] + fullname?.lastname[0]).toUpperCase();
+
+  const getAvailDonations = async () => {
+    try {
+      const res = await axios.get(
+        API_URL.RECEIVER_AVAIL_DONATIONS?.replace(
+          "ngoId",
+          "69cf8221613d6c04bebc068c"
+        ),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        const data = res?.data?.data;
+        console.log("ds", data);
+        setAvailDonations(data);
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  useEffect(()=>{
+    getAvailDonations()
+  },[])
+
+  const requestDonation = async (id) => {
+    try {
+      const res = await axios.post(
+        API_URL.REQUEST_DONATION?.replace(
+          "assignedId",
+          id
+        ),{
+          "message":"Request Made"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 201) {
+        alert(res.message)
+        window.location.reload();
+
+
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   const stats = [
     { label: 'Active Requests', value: '5', icon: Package, color: 'bg-emerald-500' },
@@ -14,12 +75,7 @@ const ReceiverDash = () => {
     { label: 'Notifications', value: '8', icon: Bell, color: 'bg-teal-500' }
   ];
 
-  const requests = [
-    { id: 'RQ001', item: 'Winter Clothes', quantity: 5, status: 'approved', date: '2025-01-10', need: 'Family of 5 needs warm clothing' },
-    { id: 'RQ002', item: 'Educational Books', quantity: 10, status: 'delivered', date: '2025-01-12', need: 'For community library' },
-    { id: 'RQ003', item: 'Food Items', quantity: 8, status: 'pending', date: '2025-01-15', need: 'Monthly rations needed' },
-    { id: 'RQ004', item: 'Medical Supplies', quantity: 3, status: 'in-transit', date: '2025-01-16', need: 'First aid supplies' }
-  ];
+ 
 
   const notifications = [
     { id: 1, type: 'approval', message: 'Your request for Winter Clothes has been approved!', time: '2 hours ago', unread: true },
@@ -64,7 +120,7 @@ const ReceiverDash = () => {
                 <p className="text-sm text-gray-500">Receiver Dashboard</p>
               </div>
             </div>
-           
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -72,23 +128,31 @@ const ReceiverDash = () => {
               >
                 <Bell className="w-6 h-6 text-gray-600" />
                 <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {notifications.filter(n => n.unread).length}
+                  {notifications.filter((n) => n.unread).length}
                 </span>
               </button>
               <div className="flex items-center space-x-3 bg-emerald-50 px-4 py-2 rounded-full">
                 <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  SM
+                  {avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">Sarah Miller</p>
+                  <p className="font-semibold text-gray-800">
+                    
+                    
+                    {fullname?.firstname+" "+
+                    fullname?.lastname}
+                  </p>
                   <p className="text-xs text-gray-500">Verified Receiver</p>
                 </div>
               </div>
-              <Link to="/Logout">
+              <Link to="/logout">
                 <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <LogOut className="w-5 h-5 text-gray-700" /> <p className="text-l text-gray-700"><b>Logout</b></p>
+                  <LogOut className="w-5 h-5 text-gray-700" />{" "}
+                  <p className="text-l text-gray-700">
+                    <b>Logout</b>
+                  </p>
                 </button>
-            </Link>
+              </Link>
             </div>
           </div>
         </div>
@@ -104,17 +168,31 @@ const ReceiverDash = () => {
             {notifications.map((notif) => (
               <div
                 key={notif.id}
-                className={`p-4 hover:bg-emerald-50 transition-colors cursor-pointer ${notif.unread ? 'bg-emerald-50/30' : ''}`}
+                className={`p-4 hover:bg-emerald-50 transition-colors cursor-pointer ${
+                  notif.unread ? "bg-emerald-50/30" : ""
+                }`}
               >
                 <div className="flex items-start space-x-3">
-                  <Bell className={`w-5 h-5 ${notif.unread ? 'text-emerald-500' : 'text-gray-400'}`} />
+                  <Bell
+                    className={`w-5 h-5 ${
+                      notif.unread ? "text-emerald-500" : "text-gray-400"
+                    }`}
+                  />
                   <div className="flex-1">
-                    <p className={`text-sm ${notif.unread ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-sm ${
+                        notif.unread
+                          ? "font-semibold text-gray-800"
+                          : "text-gray-600"
+                      }`}
+                    >
                       {notif.message}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
                   </div>
-                  {notif.unread && <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>}
+                  {notif.unread && (
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  )}
                 </div>
               </div>
             ))}
@@ -129,14 +207,16 @@ const ReceiverDash = () => {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-2">Welcome! 🎁</h2>
-            <p className="text-emerald-50 mb-6">We're here to help connect you with the resources you need!</p>
-            <button
+            <p className="text-emerald-50 mb-6">
+              We're here to help connect you with the resources you need!
+            </p>
+            {/* <button
               onClick={() => setShowRequestForm(true)}
               className="bg-white text-emerald-600 px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-1 transition-all flex items-center space-x-2"
             >
               <Plus className="w-5 h-5" />
               <span>Submit New Request</span>
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -152,7 +232,9 @@ const ReceiverDash = () => {
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">{stat.value}</h3>
+              <h3 className="text-3xl font-bold text-gray-800 mb-1">
+                {stat.value}
+              </h3>
               <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
           ))}
@@ -161,17 +243,20 @@ const ReceiverDash = () => {
         {/* Navigation Tabs */}
         <div className="bg-white rounded-xl shadow-md mb-8 p-2">
           <div className="flex space-x-2">
-            {['overview', 'my-requests', 'history', 'profile'].map((tab) => (
+            {["overview", "my-requests", "history", "profile"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                   activeTab === tab
-                    ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                {tab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                {tab
+                  .split("-")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
               </button>
             ))}
           </div>
@@ -190,51 +275,82 @@ const ReceiverDash = () => {
               </button>
             </div>
           </div>
-         
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Request ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Item Type</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Quantity</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Need Justification</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Action</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Request ID
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Item Type
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Condition
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {requests.map((request, index) => (
+                {availDonations?.map((donation, index) => (
                   <tr
                     key={index}
                     className="hover:bg-emerald-50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-emerald-600">{request.id}</span>
+                      <span className="font-semibold text-emerald-600">
+                        {donation.donationId._id}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                         <Gift className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-800">{request.item}</span>
+                        <span className="text-gray-800">
+                          {donation.donationId.itemType}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{request.quantity}</td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{request.need}</span>
+                    <td className="px-6 py-4 text-gray-600">
+                      {donation.donationId.quantity}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{request.date}</td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">
+                        {donation.donationId.condition}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {new Date(donation.createdAt).toLocaleDateString()}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        {getStatusIcon(request.status)}
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(request.status)}`}>
-                          {request.status}
+                        {getStatusIcon(donation.donationId.status)}
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(
+                            donation.donationId.status
+                          )}`}
+                        >
+                          {donation.donationId.status}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm hover:underline">
-                        View Details
+                      <button
+                        onClick={() => requestDonation(donation._id)}
+                        className="bg-emerald-600 text-white hover:bg-emerald-700 font-semibold text-sm hover:underline p-1 rounded-lg"
+                      >
+                        Request Donation
                       </button>
                     </td>
                   </tr>
@@ -249,19 +365,25 @@ const ReceiverDash = () => {
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 hover:shadow-lg transition-all cursor-pointer">
             <User className="w-8 h-8 text-blue-600 mb-3" />
             <h4 className="font-bold text-gray-800 mb-2">Update Profile</h4>
-            <p className="text-sm text-gray-600">Update contact info for delivery coordination</p>
+            <p className="text-sm text-gray-600">
+              Update contact info for delivery coordination
+            </p>
           </div>
-         
+
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200 hover:shadow-lg transition-all cursor-pointer">
             <FileText className="w-8 h-8 text-green-600 mb-3" />
             <h4 className="font-bold text-gray-800 mb-2">View Notifications</h4>
-            <p className="text-sm text-gray-600">Check allocation and delivery updates</p>
+            <p className="text-sm text-gray-600">
+              Check allocation and delivery updates
+            </p>
           </div>
-         
+
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 hover:shadow-lg transition-all cursor-pointer">
             <CheckCircle className="w-8 h-8 text-purple-600 mb-3" />
             <h4 className="font-bold text-gray-800 mb-2">Confirm Delivery</h4>
-            <p className="text-sm text-gray-600">Acknowledge receipt of donated items</p>
+            <p className="text-sm text-gray-600">
+              Acknowledge receipt of donated items
+            </p>
           </div>
         </div>
       </div>
@@ -270,10 +392,14 @@ const ReceiverDash = () => {
       {showRequestForm && (
         <div className="fixed inset-0 bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)] bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Submit Item Request</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+              Submit Item Request
+            </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Item Type</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Item Type
+                </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
@@ -281,7 +407,9 @@ const ReceiverDash = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Quantity
+                </label>
                 <input
                   type="number"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
@@ -289,7 +417,9 @@ const ReceiverDash = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Need Justification</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Need Justification
+                </label>
                 <textarea
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none resize-none"
@@ -297,7 +427,9 @@ const ReceiverDash = () => {
                 ></textarea>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Address</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Delivery Address
+                </label>
                 <textarea
                   rows="3"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none resize-none"
@@ -305,7 +437,9 @@ const ReceiverDash = () => {
                 ></textarea>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Contact Number</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Contact Number
+                </label>
                 <input
                   type="tel"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"

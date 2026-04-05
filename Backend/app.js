@@ -7,8 +7,11 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const connectToDb = require('./db/db');
 const authRoutes = require('./routes/authRoutes');
-// const donationRoutes = require('./routes/donationRoutes');
+ const donationRoutes = require('./routes/donationRoutes');
+ const ngoRoutes = require('./routes/ngoRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const receiverRoutes = require('./routes/receiverRoutes');
+const volunteerRoutes = require('./routes/volunteerRoutes');
 
 // Connect to database
 connectToDb();
@@ -30,7 +33,11 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
-// app.use('/donations', donationRoutes);
+app.use('/donations', donationRoutes);
+app.use('/ngo', ngoRoutes);
+app.use('/receiver', receiverRoutes);
+app.use('/volunteer', volunteerRoutes);
+
 // app.use('/admins', adminRoutes);
 
 module.exports = app;

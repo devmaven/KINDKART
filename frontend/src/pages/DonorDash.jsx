@@ -1,52 +1,190 @@
-import React, { useState } from 'react';
-import { Heart, Package, Bell , TrendingUp, Clock, CheckCircle, Truck, XCircle, User, LogOut, Plus, Search, Filter } from 'lucide-react';
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 
+import {
+  Heart,
+  Package,
+  Bell,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  Truck,
+  Trash2,
+  XCircle,
+  User,
+  LogOut,
+  Plus,
+  Search,
+  Filter,
+  Pencil,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { API_URL } from "../constant/api";
 
 const DonorDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [showDonationForm, setShowDonationForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [donationDetail, setDonationDetail] = useState({});
+  const [donations, setDonations] = useState([]);
+  const user = localStorage.getItem("user");
+  const token = localStorage.getItem("token");
+  const { fullname, _id } = JSON.parse(user);
+
+  let avatar = (fullname?.firstname[0] + fullname?.lastname[0]).toUpperCase();
+
+  const getMyDonations = async () => {
+    try {
+      const res = await axios.get(API_URL.MYDONATIONS?.replace("donorId", _id),{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }});
+      if (res.status === 200) {
+        const data = res?.data?.data;
+        console.log('ds', data)
+        setDonations(data)
+      }
+    } catch(error) {
+      alert(error);
+    }
+  };
+
+  useEffect(()=>{
+getMyDonations();
+  },[])
+
+  console.log('ssd',donations)
+
+  const handleDonationDetail = (e) => {
+    e.preventDefault();
+    setDonationDetail({ ...donationDetail, [e.target.name]: e.target.value });
+  };
+
+  const addDonations = async () => {
+    try {
+      const res = await axios.post(API_URL.ADD_DONATIONS, donationDetail, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.status === 201) {
+        setShowDonationForm(false);
+        alert(res.message);
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+   const deleteDonations = async (id) => {
+     try {
+       const res = await axios.delete(
+         API_URL.DELETE_DONATIONS?.replace("id", id),
+         {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         }
+       );
+       if (res.status === 200) {
+        window.location.reload();
+       }
+     } catch(error) {
+       alert(error);
+     }
+   };
+
+
+   const updateDonations = async (id) => {
+     try {
+       const res = await axios.delete(
+         API_URL.DELETEDONATIONS?.replace("id", id),
+         {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         }
+       );
+       if (res.status === 200) {
+         window.location.reload();
+       }
+     } catch (error) {
+       alert(error);
+     }
+   };
 
   const stats = [
-    { label: 'Total Donations', value: '12', icon: Package, color: 'bg-blue-500' },
-    { label: 'Items Delivered', value: '8', icon: CheckCircle, color: 'bg-green-500' },
-    { label: 'Pending', value: '2', icon: Clock, color: 'bg-yellow-500' },
-    { label: 'Impact Score', value: '95', icon: TrendingUp, color: 'bg-purple-500' },
-    { label: 'Notifications', value: '8', icon: Bell, color: 'bg-teal-500' }
+    {
+      label: "Total Donations",
+      value: "12",
+      icon: Package,
+      color: "bg-blue-500",
+    },
+    {
+      label: "Items Delivered",
+      value: "8",
+      icon: CheckCircle,
+      color: "bg-green-500",
+    },
+    { label: "Pending", value: "2", icon: Clock, color: "bg-yellow-500" },
+    {
+      label: "Impact Score",
+      value: "95",
+      icon: TrendingUp,
+      color: "bg-purple-500",
+    },
+    { label: "Notifications", value: "8", icon: Bell, color: "bg-teal-500" },
   ];
 
-  const donations = [
-    { id: 'DN001', item: 'Winter Clothes', quantity: 5, status: 'delivered', date: '2025-01-10' },
-    { id: 'DN002', item: 'Books', quantity: 10, status: 'picked-up', date: '2025-01-12' },
-    { id: 'DN003', item: 'Toys', quantity: 8, status: 'pending', date: '2025-01-15' },
-    { id: 'DN004', item: 'Food Items', quantity: 3, status: 'approved', date: '2025-01-16' }
-  ];
+ 
 
   const notifications = [
-    { id: 1, type: 'approval', message: 'Your donation for Winter Clothes has been approved!', time: '2 hours ago', unread: true },
-    { id: 2, type: 'delivery', message: 'Educational Books will be delivered tomorrow', time: '5 hours ago', unread: true },
-    { id: 3, type: 'info', message: 'Please update your delivery address', time: '1 day ago', unread: false }
+    {
+      id: 1,
+      type: "approval",
+      message: "Your donation for Winter Clothes has been approved!",
+      time: "2 hours ago",
+      unread: true,
+    },
+    {
+      id: 2,
+      type: "delivery",
+      message: "Educational Books will be delivered tomorrow",
+      time: "5 hours ago",
+      unread: true,
+    },
+    {
+      id: 3,
+      type: "info",
+      message: "Please update your delivery address",
+      time: "1 day ago",
+      unread: false,
+    },
   ];
 
   const getStatusIcon = (status) => {
-    switch(status) {
-      case 'delivered': return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'picked-up': return <Truck className="w-5 h-5 text-blue-500" />;
-      case 'approved': return <CheckCircle className="w-5 h-5 text-purple-500" />;
-      case 'pending': return <Clock className="w-5 h-5 text-yellow-500" />;
-      default: return <XCircle className="w-5 h-5 text-red-500" />;
+    switch (status) {
+      case "delivered":
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case "picked-up":
+        return <Truck className="w-5 h-5 text-blue-500" />;
+      case "approved":
+        return <CheckCircle className="w-5 h-5 text-purple-500" />;
+      case "pending":
+        return <Clock className="w-5 h-5 text-yellow-500" />;
+      default:
+        return <XCircle className="w-5 h-5 text-red-500" />;
     }
   };
 
   const getStatusBadge = (status) => {
     const styles = {
-      delivered: 'bg-green-100 text-green-700',
-      'picked-up': 'bg-blue-100 text-blue-700',
-      approved: 'bg-purple-100 text-purple-700',
-      pending: 'bg-yellow-100 text-yellow-700'
+      delivered: "bg-green-100 text-green-700",
+      "picked-up": "bg-blue-100 text-blue-700",
+      approved: "bg-purple-100 text-purple-700",
+      pending: "bg-yellow-100 text-yellow-700",
     };
-    return styles[status] || 'bg-gray-100 text-gray-700';
+    return styles[status] || "bg-gray-100 text-gray-700";
   };
 
   return (
@@ -66,63 +204,82 @@ const DonorDashboard = () => {
                 <p className="text-sm text-gray-500">Donor Dashboard</p>
               </div>
             </div>
-           
+
             <div className="flex items-center space-x-4">
-                <button
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className="relative p-2 hover:bg-emerald-50 rounded-full transition-colors"
-                >
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 hover:bg-emerald-50 rounded-full transition-colors"
+              >
                 <Bell className="w-6 h-6 text-gray-600" />
-                    <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                        {notifications.filter(n => n.unread).length}
-                    </span>
-                </button>
+                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {notifications.filter((n) => n.unread).length}
+                </span>
+              </button>
               <div className="flex items-center space-x-3 bg-emerald-50 px-4 py-2 rounded-full">
                 <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  JD
+                  {avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">John Doe</p>
+                  <p className="font-semibold text-gray-800">
+                    {fullname?.firstname + " " + fullname?.lastname}
+                  </p>
                   <p className="text-xs text-gray-500">Verified Donor</p>
                 </div>
               </div>
-              <Link to="/Logout">
+              <Link to="/logout">
                 <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <LogOut className="w-5 h-5 text-gray-700" /> <p className="text-l text-gray-700"><b>Logout</b></p>
+                  <LogOut className="w-5 h-5 text-gray-700" />{" "}
+                  <p className="text-l text-gray-700">
+                    <b>Logout</b>
+                  </p>
                 </button>
-            </Link>
+              </Link>
             </div>
           </div>
         </div>
       </header>
 
       {/* Notifications Dropdown */}
-            {showNotifications && (
-              <div className="fixed top-20 right-6 w-96 bg-white rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
-                <div className="p-4 border-b border-gray-200">
-                  <h3 className="font-bold text-gray-800">Notifications</h3>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {notifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className={`p-4 hover:bg-emerald-50 transition-colors cursor-pointer ${notif.unread ? 'bg-emerald-50/30' : ''}`}
+      {showNotifications && (
+        <div className="fixed top-20 right-6 w-96 bg-white rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="font-bold text-gray-800">Notifications</h3>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {notifications.map((notif) => (
+              <div
+                key={notif.id}
+                className={`p-4 hover:bg-emerald-50 transition-colors cursor-pointer ${
+                  notif.unread ? "bg-emerald-50/30" : ""
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <Bell
+                    className={`w-5 h-5 ${
+                      notif.unread ? "text-emerald-500" : "text-gray-400"
+                    }`}
+                  />
+                  <div className="flex-1">
+                    <p
+                      className={`text-sm ${
+                        notif.unread
+                          ? "font-semibold text-gray-800"
+                          : "text-gray-600"
+                      }`}
                     >
-                      <div className="flex items-start space-x-3">
-                        <Bell className={`w-5 h-5 ${notif.unread ? 'text-emerald-500' : 'text-gray-400'}`} />
-                        <div className="flex-1">
-                          <p className={`text-sm ${notif.unread ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>
-                            {notif.message}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
-                        </div>
-                        {notif.unread && <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>}
-                      </div>
-                    </div>
-                  ))}
+                      {notif.message}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
+                  </div>
+                  {notif.unread && (
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  )}
                 </div>
               </div>
-            )}
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Welcome Banner */}
@@ -131,7 +288,10 @@ const DonorDashboard = () => {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-2">Welcome! 👋</h2>
-            <p className="text-emerald-50 mb-6">Thank you for your kindness. Your donations are making a real difference!</p>
+            <p className="text-emerald-50 mb-6">
+              Thank you for your kindness. Your donations are making a real
+              difference!
+            </p>
             <button
               onClick={() => setShowDonationForm(true)}
               className="bg-white text-emerald-600 px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-1 transition-all flex items-center space-x-2"
@@ -155,7 +315,9 @@ const DonorDashboard = () => {
                 </div>
                 <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">{stat.value}</h3>
+              <h3 className="text-3xl font-bold text-gray-800 mb-1">
+                {stat.value}
+              </h3>
               <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
           ))}
@@ -164,14 +326,14 @@ const DonorDashboard = () => {
         {/* Navigation Tabs */}
         <div className="bg-white rounded-xl shadow-md mb-8 p-2">
           <div className="flex space-x-2">
-            {['overview', 'active', 'history', 'profile'].map((tab) => (
+            {["overview", "active", "history", "profile"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                   activeTab === tab
-                    ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -183,7 +345,9 @@ const DonorDashboard = () => {
         {/* Donations Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-xl font-bold text-gray-800">Donation Tracking</h3>
+            <h3 className="text-xl font-bold text-gray-800">
+              Donation Tracking
+            </h3>
             <div className="flex space-x-3">
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Search className="w-5 h-5 text-gray-600" />
@@ -193,51 +357,86 @@ const DonorDashboard = () => {
               </button>
             </div>
           </div>
-         
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Donation ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Item Type</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Quantity</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Action</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Donation ID
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Item Type
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {donations.map((donation, index) => (
-                  <tr
-                    key={index}
-                    className="hover:bg-emerald-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-emerald-600">{donation.id}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <Package className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-800">{donation.item}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{donation.quantity}</td>
-                    <td className="px-6 py-4 text-gray-600">{donation.date}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(donation.status)}
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(donation.status)}`}>
-                          {donation.status}
+                {donations.length > 0 &&
+                  donations.map((donation, index) => (
+                    <tr
+                      key={index}
+                      className="hover:bg-emerald-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-emerald-600 text-ellipsis">
+                          {donation?._id}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm hover:underline">
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-emerald-600">
+                          {donation?.itemType?.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-emerald-600">
+                          {donation?.quantity}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {new Date(donation?.createdAt)?.toLocaleString(
+                          "en-US",
+                          {
+                            day: "numeric",
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                          }
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          {getStatusIcon(donation?.status)}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(
+                              donation?.status
+                            )}`}
+                          >
+                            {donation?.status}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {/* <button className="text-emerald-600 hover:text-emerald-700 cursor-pointer font-semibold text-sm hover:underline">
+                          <Pencil />
+                        </button>{" "} */}
+                        <button onClick={()=>deleteDonations(donation?._id)} className="text-red-600 hover:text-red-700 cursor-pointer font-semibold text-sm hover:underline">
+                          <Trash2 />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -248,70 +447,114 @@ const DonorDashboard = () => {
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 hover:shadow-lg transition-all cursor-pointer">
             <User className="w-8 h-8 text-blue-600 mb-3" />
             <h4 className="font-bold text-gray-800 mb-2">Update Profile</h4>
-            <p className="text-sm text-gray-600">Manage your personal details and preferences</p>
+            <p className="text-sm text-gray-600">
+              Manage your personal details and preferences
+            </p>
           </div>
-         
+
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200 hover:shadow-lg transition-all cursor-pointer">
             <Clock className="w-8 h-8 text-green-600 mb-3" />
             <h4 className="font-bold text-gray-800 mb-2">Schedule Pickup</h4>
-            <p className="text-sm text-gray-600">Set pickup preferences for your donations</p>
+            <p className="text-sm text-gray-600">
+              Set pickup preferences for your donations
+            </p>
           </div>
-         
+
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 hover:shadow-lg transition-all cursor-pointer">
             <Heart className="w-8 h-8 text-purple-600 mb-3" />
             <h4 className="font-bold text-gray-800 mb-2">View Impact</h4>
-            <p className="text-sm text-gray-600">See how your donations help the community</p>
+            <p className="text-sm text-gray-600">
+              See how your donations help the community
+            </p>
           </div>
         </div>
       </div>
 
       {/* Donation Form Modal */}
       {showDonationForm && (
-        <div className="fixed inset-0 bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)] bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transition-all">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">New Donation</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Item Type</label>
-                <input type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none" placeholder="e.g., Clothes, Books" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
-                <input type="number" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none" placeholder="0" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Condition</label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none">
-                  <option>New</option>
-                  <option>Like New</option>
-                  <option>Good</option>
-                  <option>Fair</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup Preference</label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none">
-                  <option>Drop at NGO/NSS</option>
-                  <option>Volunteer Pickup</option>
-                </select>
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <button
-                  onClick={() => setShowDonationForm(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => setShowDonationForm(false)}
-                  className="flex-1 px-6 py-3 bg-[linear-gradient(90deg,#16a34a)] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-                >
-                  Submit
-                </button>
+        <form onSubmit={addDonations}>
+          <div className="fixed inset-0 bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)] bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transition-all">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                New Donation
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Item Type
+                  </label>
+                  <select
+                    name="itemType"
+                    required
+                    onChange={handleDonationDetail}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
+                  >
+                    <option value="books">Books</option>
+                    <option value="clothes">Clothes</option>
+                    <option value="cycles">Cycles</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
+                    placeholder="0"
+                    min={1}
+                    name="quantity"
+                    onChange={handleDonationDetail}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Condition
+                  </label>
+                  <select
+                    name="condition"
+                    required
+                    onChange={handleDonationDetail}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
+                  >
+                    <option value="new">New</option>
+                    <option value="used">Used</option>
+                    <option value="perishable">Perishable</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Pickup Preference
+                  </label>
+                  <select
+                    name="deliveryOption"
+                    required
+                    onChange={handleDonationDetail}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
+                  >
+                    <option value="drop_off">Drop at NGO/NSS</option>
+                    <option value="pickup">Volunteer Pickup</option>
+                  </select>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    onClick={() => setShowDonationForm(false)}
+                    className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-[linear-gradient(90deg,#16a34a)] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                  >
+                    Submit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       )}
     </div>
   );

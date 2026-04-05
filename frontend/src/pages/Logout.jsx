@@ -5,6 +5,7 @@ export default function Logout() {
 
   useEffect(() => {
     // Clear authentication data
+    localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("role");
   }, []);
@@ -21,7 +22,7 @@ export default function Logout() {
         </p>
 
         <Link
-          to="/Login"
+          to="/login"
           className="block w-full p-[12px] bg-[linear-gradient(90deg,#16a34a)] text-white rounded-[12px] font-[600]"
         >
           Go to Login

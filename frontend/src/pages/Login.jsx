@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {API_URL} from "../constant/api";
+import { API_URL } from "../constant/api";
 import axios from "axios";
 import { useContext } from "react";
 import { AuthContext } from "../context/auth.context";
 
-
 export default function Login() {
   const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,10 +20,20 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("role", res.data.user.role);
 
-       setUser(res.data.user);
-       
-      navigate("/");
-    } catch{
+      setUser(res.data.user);
+      if (res.data.user.role === "donor") {
+        navigate("/donor-dashboard");
+      }
+      if (res.data.user.role === "receiver") {
+        navigate("/receiver-dashboard");
+      }
+      if (res.data.user.role === "ngo") {
+        navigate("/ngo-dashboard");
+      }
+      if (res.data.user.role === "volunteer") {
+        navigate("/volunteer-dashboard");
+      }
+    } catch {
       alert("Invalid credentials");
     }
   };
@@ -59,10 +68,7 @@ export default function Login() {
         />
 
         <p className="text-right mt-[5px] mb-[20px]">
-          <Link
-            to="/ForgotPassword"
-            className="text-[#2563eb] text-[13px]"
-          >
+          <Link to="/ForgotPassword" className="text-[#2563eb] text-[13px]">
             Forgot password?
           </Link>
         </p>
