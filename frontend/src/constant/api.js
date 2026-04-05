@@ -21,6 +21,8 @@ export const API_URL = {
     NGO_REQUESTS: `${BASE_API}/ngo/requests`,
     NGO_RESPOND_REQUEST: `${BASE_API}/ngo/respond-request/requestId`,
     NGO_ALL_VOLUNTEERS: `${BASE_API}/ngo/all-volunteers`,
+    NGO_ASSIGN_TASK: `${BASE_API}/ngo/assign-task/requestId`,
+    
 
     //RECEIVER
     RECEIVER_AVAIL_DONATIONS: `${BASE_API}/receiver/available-donations/ngoId`,

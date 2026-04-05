@@ -26,6 +26,7 @@ const NGODash = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showAssignVolunteer, setShowAssignVolunteer] = useState(false);
   const [showDistributionLog, setShowDistributionLog] = useState(false);
+  const [assignDetail, setAssignDetail] = useState({});
   const [showRequest, setShowRequest] = useState(false);
   const [requests, setRequests] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
@@ -227,11 +228,41 @@ const NGODash = () => {
     }
   };
 
+   const assignTask = async () => {
+     try {
+     if(assignDetail.requestId && assignDetail.requestId) { 
+      const res = await axios.post(
+         API_URL.NGO_ASSIGN_TASK.replace("requestId", assignDetail?.requestId),
+         {
+            volunteerId: assignDetail?.volunteerId,
+           scheduledDate: Date.now(),
+           notes:"Task is assigned"
+         },
+         {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         }
+       );
+       if (res.status === 200) {
+         const data = res.data.data;
+         setShowAssignVolunteer(false)
+         window.location.reload();
+       }
+      }
+       
+     } catch (error) {
+       alert(error);
+     }
+   };
+
+   const handleDetail=(e)=>{
+   setAssignDetail({...assignDetail,[e.target.name]:e.target.value})
+   }
+
   console.log(
     "dse",
-    requests?.filter(
-      (el) => (el.status !== "approved") && (el.status !== "rejected")
-    )
+    volunteers
   );
 
   return (
@@ -618,10 +649,16 @@ const NGODash = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Donation ID
                 </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <select
+                  onChange={handleDetail}
+                  name={"requestId"}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+                >
                   {requests.map((request, el) => {
                     return (
-                      <option key={el}>{request._id} - Winter Clothes</option>
+                      <option value={request._id} key={el}>
+                        {request._id} - Winter Clothes
+                      </option>
                     );
                   })}
                 </select>
@@ -630,10 +667,16 @@ const NGODash = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Select Volunteer
                 </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <select
+                  name={"volunteerId"}
+                  onChange={handleDetail}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+                >
+                  {" "}
+                  <option>Select Volunteer</option>
                   {volunteers.map((volunteer, el) => {
                     return (
-                      <option key={el}>
+                      <option value={volunteer._id} key={el}>
                         {volunteer.fullname.firstname +
                           " " +
                           volunteer.fullname.lastname}
@@ -670,7 +713,7 @@ const NGODash = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => setShowAssignVolunteer(false)}
+                  onClick={() => assignTask()}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
                 >
                   Assign
@@ -800,61 +843,65 @@ const NGODash = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {requests?.filter((el)=>el.status!=="approved" && 
-                    el.status!=="rejected").map((donation, el) => (
-                      <tr
-                        key={el}
-                        className="hover:bg-emerald-50 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <span className="font-semibold text-emerald-600">
-                            {donation?.donationId?._id}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-800">
-                              {donation?.receiverId?.fullname?.firstname}
+                    {requests
+                      ?.filter(
+                        (el) =>
+                          el.status !== "approved" && el.status !== "rejected"
+                      )
+                      .map((donation, el) => (
+                        <tr
+                          key={el}
+                          className="hover:bg-emerald-50 transition-colors"
+                        >
+                          <td className="px-6 py-4">
+                            <span className="font-semibold text-emerald-600">
+                              {donation?.donationId?._id}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <Package className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-800">
-                              {new Date(
-                                donation?.createdAt
-                              )?.toLocaleTimeString()}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600">
-                          {donation?.receiverId?.address}
-                        </td>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                              <User className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-800">
+                                {donation?.receiverId?.fullname?.firstname}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                              <Package className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-800">
+                                {new Date(
+                                  donation?.createdAt
+                                )?.toLocaleTimeString()}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">
+                            {donation?.receiverId?.address}
+                          </td>
 
-                        <td className="px-6 py-4">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() =>
-                                respondToRequest(donation?._id, "approved")
-                              }
-                              className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() =>
-                                respondToRequest(donation?._id, "rejected")
-                              }
-                              className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="px-6 py-4">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() =>
+                                  respondToRequest(donation?._id, "approved")
+                                }
+                                className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() =>
+                                  respondToRequest(donation?._id, "rejected")
+                                }
+                                className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
