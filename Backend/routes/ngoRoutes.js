@@ -11,6 +11,7 @@ router.get('/requests', authUser,ngoController.getReceiverRequests )
 router.put('/respond-request/:requestId', authUser,ngoController.respondToRequest )
 router.post('/assign-task/:requestId', authUser,ngoController.assignTaskFromRequest );
 router.get('/all-volunteers', authUser,ngoController.getVolunteers );
+router.get('/my-stats', authUser,ngoController.getNgoStatistics );
 
 
 module.exports= router;

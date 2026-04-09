@@ -6,6 +6,9 @@ const volunteerController = require('../controllers/volunteerController');
 const { authUser } = require('../middlewares/auth.middleware');
 
 router.get('/my-tasks', authUser,volunteerController.getMyTasks)
+router.put('/update-task/:taskId', authUser,volunteerController.updateTaskStatus)
+router.get('/my-activity-log', authUser,volunteerController.getMyActivityLog)
+router.get('/my-stats', authUser,volunteerController.getVolunteerStatistics)
 
 
 

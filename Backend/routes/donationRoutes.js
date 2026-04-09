@@ -31,4 +31,9 @@ router.delete('/my-donations/delete/:id', authUser,
   donationController.deleteDonation
 );
 
+// Donor Stats
+router.get('/my-stats', authUser,
+  donationController.getDonorStatistics
+);
+
 module.exports = router;

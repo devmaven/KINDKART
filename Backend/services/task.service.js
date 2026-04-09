@@ -6,7 +6,8 @@ module.exports.createTaskFromRequest = async ({
     volunteerId,
     scheduledDate,
     assignedBy,
-    notes
+    notes,
+    priority = 'medium'
 }) => {
       console.log('sds', volunteerId, scheduledDate, notes, requestId)
     if (!requestId || !volunteerId || !scheduledDate || !assignedBy) {
@@ -38,7 +39,7 @@ module.exports.createTaskFromRequest = async ({
         quantity: donation.quantity,
         location: receiver.address || 'Address not provided',
         scheduledDate: scheduledDate,
-        priority: 'high',
+        priority: priority,  // Use the priority from parameter
         assignedTo: volunteerId,
         assignedBy: assignedBy,
         notes: notes || `Deliver to receiver: ${receiver.fullname.firstname} ${receiver.fullname.lastname || ''}`,

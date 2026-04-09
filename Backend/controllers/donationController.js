@@ -248,3 +248,124 @@ module.exports.deleteDonation = async (req, res, next) => {
     });
   }
 };
+
+/* ================= GET DONOR STATISTICS WITH DYNAMIC LEVELS ================= */
+module.exports.getDonorStatistics = async (req, res) => {
+  try {
+    const donorId = req.user._id;
+
+    // Get all donations made by this donor
+    const allDonations = await Donation.find({ donorId: donorId });
+
+    // Calculate statistics
+    const totalDonationsMade = allDonations.length;
+    const totalDonationsDelivered = allDonations.filter(d => d.status === 'delivered').length;
+    const totalDonationsPending = allDonations.filter(d => d.status === 'pending').length;
+    const totalDonationsApproved = allDonations.filter(d => d.status === 'approved').length;
+    const totalDonationsPickedUp = allDonations.filter(d => d.status === 'picked_up').length;
+
+    // Calculate points (20 points for each donation made)
+    const POINTS_PER_DONATION = 20;
+    const POINTS_PER_LEVEL = 100;
+
+    const totalPoints = totalDonationsMade * POINTS_PER_DONATION;
+
+    // Level calculation
+    const currentLevel = Math.floor(totalPoints / POINTS_PER_LEVEL) + 1;
+    const pointsForCurrentLevel = (currentLevel - 1) * POINTS_PER_LEVEL;
+    const pointsInCurrentLevel = totalPoints - pointsForCurrentLevel;
+    const pointsNeededForNextLevel = POINTS_PER_LEVEL - pointsInCurrentLevel;
+    const progressToNextLevel = ((pointsInCurrentLevel / POINTS_PER_LEVEL) * 100).toFixed(0);
+
+    // Generate dynamic level milestones (up to level 20)
+    const levelMilestones = {};
+    for (let i = 1; i <= 20; i++) {
+      levelMilestones[`level${i}`] = i * POINTS_PER_LEVEL;
+    }
+
+    // Calculate next milestone
+    const currentLevelPointsNeeded = currentLevel * POINTS_PER_LEVEL;
+    const pointsToNextMilestone = currentLevelPointsNeeded - totalPoints;
+
+    // Level badge based on level
+    let levelBadge = 'Bronze';
+    if (currentLevel >= 10) levelBadge = 'Diamond';
+    else if (currentLevel >= 7) levelBadge = 'Platinum';
+    else if (currentLevel >= 5) levelBadge = 'Gold';
+    else if (currentLevel >= 3) levelBadge = 'Silver';
+    else levelBadge = 'Bronze';
+
+    const stats = {
+      // Donation counts
+      totalDonationsMade: totalDonationsMade,
+      totalDonationsDelivered: totalDonationsDelivered,
+      totalDonationsPending: totalDonationsPending,
+      totalDonationsApproved: totalDonationsApproved,
+      totalDonationsPickedUp: totalDonationsPickedUp,
+
+      // Points
+      totalPoints: totalPoints,
+      pointsPerDonation: POINTS_PER_DONATION,
+
+      // Level system
+      level: currentLevel,
+      levelBadge: levelBadge,
+      pointsInCurrentLevel: pointsInCurrentLevel,
+      pointsNeededForNextLevel: pointsNeededForNextLevel,
+      progressToNextLevel: parseInt(progressToNextLevel),
+      pointsToNextMilestone: pointsToNextMilestone,
+
+      // Level info
+      levelInfo: {
+        currentLevelMinPoints: pointsForCurrentLevel,
+        currentLevelMaxPoints: pointsForCurrentLevel + POINTS_PER_LEVEL,
+        nextLevelMinPoints: pointsForCurrentLevel + POINTS_PER_LEVEL
+      },
+
+      // Level milestones (first 10 levels)
+      levelMilestones: {
+        level1: 100,
+        level2: 200,
+        level3: 300,
+        level4: 400,
+        level5: 500,
+        level6: 600,
+        level7: 700,
+        level8: 800,
+        level9: 900,
+        level10: 1000
+      },
+
+      // Items
+      totalItemsDonated: allDonations.reduce((sum, d) => sum + d.quantity, 0),
+
+      // Trends
+      donationsLast30Days: allDonations.filter(d => new Date(d.createdAt) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
+
+      // Recent donations
+      recentDonations: await Donation.find({ donorId: donorId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('itemType quantity status createdAt')
+        .then(donations => donations.map(d => ({
+          itemType: d.itemType,
+          quantity: d.quantity,
+          status: d.status,
+          date: d.createdAt,
+          pointsEarned: POINTS_PER_DONATION
+        })))
+    };
+
+    res.status(200).json({
+      success: true,
+      statistics: stats
+    });
+
+  } catch (error) {
+    console.error('Error in getDonorStatistics:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

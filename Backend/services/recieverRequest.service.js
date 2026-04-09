@@ -47,19 +47,26 @@ module.exports.getRequestsByNgo = async (ngoId, status = null) => {
         throw new Error('NGO ID is required');
     }
 
-    let query = { "ngoId":ngoId };
+    let query = { "ngoId": ngoId };
     if (status) {
         query.status = status;
     }
 
 
-   
+
     const requests = await ReceiverRequest.find(query)
         .populate('receiverId', 'fullname email address phone')
-        .populate('donationId', 'fullname email address phone')
+        .populate({
+            path: 'donationId',
+            select: 'donationId itemType quantity condition status',
+            populate: {
+                path: 'donorId',  // Populate donor from donation
+                select: 'fullname email address phone'
+            }
+        })
         .populate('assignmentId')
         .sort({ requestedAt: -1 });
-    console.log('ghg', requests)
+
     return requests;
 };
 

@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const donationSchema = new mongoose.Schema(
   {
+    donationId: {
+      type: String,
+      unique: true,
+      required: true
+    },
     donorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
