@@ -16,6 +16,12 @@ import {
   Search,
   Filter,
   Pencil,
+  CircleCheck,
+  Orbit,
+  PackageCheck,
+  Badge,
+  LucideBadge,
+  Award,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -27,6 +33,7 @@ const DonorDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [donationDetail, setDonationDetail] = useState({});
   const [donations, setDonations] = useState([]);
+  const [stats, setStats] = useState({});
   const user = localStorage.getItem("user");
   const token = localStorage.getItem("token");
   const { fullname, _id } = JSON.parse(user);
@@ -49,11 +56,32 @@ const DonorDashboard = () => {
     }
   };
 
+  const getMyStats = async () => {
+    try {
+      const res = await axios.get(
+        API_URL.DONOR_STATS,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        const data = res?.data?.statistics;
+        console.log("dstat", data);
+        setStats(data);
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   useEffect(()=>{
+    getMyStats();
 getMyDonations();
   },[])
 
-  console.log('ssd',donations)
+
 
   const handleDonationDetail = (e) => {
     e.preventDefault();
@@ -113,30 +141,6 @@ getMyDonations();
      }
    };
 
-  const stats = [
-    {
-      label: "Total Donations",
-      value: "12",
-      icon: Package,
-      color: "bg-blue-500",
-    },
-    {
-      label: "Items Delivered",
-      value: "8",
-      icon: CheckCircle,
-      color: "bg-green-500",
-    },
-    { label: "Pending", value: "2", icon: Clock, color: "bg-yellow-500" },
-    {
-      label: "Impact Score",
-      value: "95",
-      icon: TrendingUp,
-      color: "bg-purple-500",
-    },
-    { label: "Notifications", value: "8", icon: Bell, color: "bg-teal-500" },
-  ];
-
- 
 
   const notifications = [
     {
@@ -194,9 +198,9 @@ getMyDonations();
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {/* <div className="bg-gradient-to-r from-emerald-400 to-teal-500 p-2 rounded-xl shadow-lg hover:scale-105 transition-transform">
+              <div className="bg-gradient-to-r from-emerald-400 to-teal-500 p-2 rounded-xl shadow-lg hover:scale-105 transition-transform">
                 <Heart className="w-8 h-8 text-white fill-white" />
-              </div> */}
+              </div>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
                   Kindkart
@@ -287,7 +291,9 @@ getMyDonations();
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold mb-2">Welcome! 👋</h2>
+            <h2 className="text-3xl font-bold mb-2">
+              Welcome! {fullname?.firstname + " " + fullname?.lastname}👋
+            </h2>
             <p className="text-emerald-50 mb-6">
               Thank you for your kindness. Your donations are making a real
               difference!
@@ -304,23 +310,75 @@ getMyDonations();
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-green-500" />
+          {/* Donations */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-blue-600 p-3 rounded-lg`}>
+                <Package className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-sm text-gray-500">{stat.label}</p>
+              <TrendingUp className="w-4 h-4 text-green-500" />
             </div>
-          ))}
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalDonationsMade}
+            </h3>
+            <p className="text-sm text-gray-500">Total Donations</p>
+          </div>
+
+          {/* Arroved */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-yellow-600 p-3 rounded-lg`}>
+                <CircleCheck className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalDonationsApproved}
+            </h3>
+            <p className="text-sm text-gray-500">Donations Approved</p>
+          </div>
+
+          {/* Donations */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-orange-600 p-3 rounded-lg`}>
+                <Orbit className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalDonationsPending}
+            </h3>
+            <p className="text-sm text-gray-500">Pending Donations</p>
+          </div>
+
+          {/* Donations */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-green-600 p-3 rounded-lg`}>
+                <PackageCheck className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalDonationsDelivered}
+            </h3>
+            <p className="text-sm text-gray-500">Delivered</p>
+          </div>
+
+          {/* Points Earned */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-purple-600 p-3 rounded-lg`}>
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalPoints}
+            </h3>
+            <p className="text-sm text-gray-500">Points Earned</p>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -372,6 +430,9 @@ getMyDonations();
                     Quantity
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Condition
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                     Date
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
@@ -391,17 +452,23 @@ getMyDonations();
                     >
                       <td className="px-6 py-4">
                         <span className="font-semibold text-emerald-600 text-ellipsis">
-                          {donation?._id}
+                          {donation?.donationId}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-semibold text-emerald-600">
-                          {donation?.itemType?.toUpperCase()}
+                        <span className="font-semibold capitalize text-gray-600">
+                          {donation?.itemType}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-semibold text-emerald-600">
+                        <span className="font-semibold text-gray-600">
                           {donation?.quantity}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className="font-semibold capitalize text-gray-600">
+                          {donation?.condition}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-600">
@@ -431,7 +498,10 @@ getMyDonations();
                         {/* <button className="text-emerald-600 hover:text-emerald-700 cursor-pointer font-semibold text-sm hover:underline">
                           <Pencil />
                         </button>{" "} */}
-                        <button onClick={()=>deleteDonations(donation?._id)} className="text-red-600 hover:text-red-700 cursor-pointer font-semibold text-sm hover:underline">
+                        <button
+                          onClick={() => deleteDonations(donation?._id)}
+                          className="text-red-600 hover:text-red-700 cursor-pointer font-semibold text-sm hover:underline"
+                        >
                           <Trash2 />
                         </button>
                       </td>
@@ -473,7 +543,7 @@ getMyDonations();
       {/* Donation Form Modal */}
       {showDonationForm && (
         <form onSubmit={addDonations}>
-          <div className="fixed inset-0 bg-[linear-gradient(135deg,#74ffac_0%,#2bff95_100%)] bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/30  backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transition-all">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
                 New Donation
@@ -518,6 +588,7 @@ getMyDonations();
                     onChange={handleDonationDetail}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
                   >
+                    <option>Select Condition</option>
                     <option value="new">New</option>
                     <option value="used">Used</option>
                     <option value="perishable">Perishable</option>
@@ -533,6 +604,7 @@ getMyDonations();
                     onChange={handleDonationDetail}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none"
                   >
+                    <option>Select your pickup preferences</option>
                     <option value="drop_off">Drop at NGO/NSS</option>
                     <option value="pickup">Volunteer Pickup</option>
                   </select>

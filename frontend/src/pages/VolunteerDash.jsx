@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {Link} from 'react-router-dom'
-import { Heart, Package, MapPin, Clock, CheckCircle, AlertCircle, User, LogOut, Search, Filter, Truck, Navigation, Phone, Mail, Award, TrendingUp, RefreshCw } from 'lucide-react';
+import { Heart, Package, MapPin, Clock, CheckCircle, AlertCircle, User, LogOut, Search, Filter, Truck, Navigation, Phone, Mail, Award, TrendingUp, RefreshCw, CircleCheck, PackageCheck, NotebookPen } from 'lucide-react';
 import {API_URL} from "../constant/api"
 import axios from 'axios';
 
@@ -9,6 +9,8 @@ const VolunteerDash = () => {
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   const [showEscalate, setShowEscalate] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [activityLog, setActivityLog] = useState([]);
+  const [stats, setStats] = useState({});
   const [tasks, setTasks] = useState([]);
 const user = localStorage.getItem("user");
 const token = localStorage.getItem("token");
@@ -16,20 +18,10 @@ const { fullname } = JSON.parse(user);
  let avatar = (fullname?.firstname[0] + fullname?.lastname[0]).toUpperCase();
 
 
-  const stats = [
-    { label: 'Assigned Tasks', value: '5', icon: Package, color: 'bg-blue-500' },
-    { label: 'Completed', value: '28', icon: CheckCircle, color: 'bg-green-500' },
-    { label: 'In Transit', value: '2', icon: Truck, color: 'bg-orange-500' },
-    { label: 'Total Points', value: '350', icon: Award, color: 'bg-purple-500' }
-  ];
 
   
 
-  const activityLog = [
-    { id: 'TSK028', action: 'Delivered', item: 'Medical Supplies', date: '2025-02-18', time: '5:30 PM', points: 15 },
-    { id: 'TSK027', action: 'Delivered', item: 'Toys', date: '2025-02-18', time: '3:00 PM', points: 12 },
-    { id: 'TSK026', action: 'Delivered', item: 'Blankets', date: '2025-02-17', time: '6:15 PM', points: 10 }
-  ];
+ 
 
   const notifications = [
     { type: 'new', message: 'New task assigned: Pickup from Sector 29', time: '10 mins ago' },
@@ -40,7 +32,7 @@ const { fullname } = JSON.parse(user);
   const getStatusBadge = (status) => {
     const styles = {
       assigned: 'bg-blue-100 text-blue-700',
-      collected: 'bg-purple-100 text-purple-700',
+      accepted: 'bg-yellow-100 text-yellow-700',
       'in-transit': 'bg-orange-100 text-orange-700',
       delivered: 'bg-green-100 text-green-700'
     };
@@ -49,10 +41,10 @@ const { fullname } = JSON.parse(user);
 
   const getStatusIcon = (status) => {
     switch(status) {
-      case 'assigned': return <Clock className="w-5 h-5 text-blue-500" />;
-      case 'collected': return <Package className="w-5 h-5 text-purple-500" />;
+      case 'assigned': return <NotebookPen className="w-5 h-5 text-blue-500" />;
+      case 'accepted': return <Package className="w-5 h-5 text-purple-500" />;
       case 'in-transit': return <Truck className="w-5 h-5 text-orange-500" />;
-      case 'delivered': return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'delivered': return <PackageCheck className="w-5 h-5 text-green-500" />;
       default: return <Package className="w-5 h-5 text-gray-500" />;
     }
   };
@@ -66,10 +58,46 @@ const { fullname } = JSON.parse(user);
     return styles[priority] || 'bg-gray-100 text-gray-700';
   };
 
-  const updateTaskStatus = (taskId, newStatus) => {
-    console.log(`Updating task ${taskId} to ${newStatus}`);
-    // Task status update logic
+  const updateTaskStatus = async(taskId, newStatus) => {
+
+    try {
+        const res = await axios.put(
+          API_URL.VOLUNTEER_UPDATE_TASK.replace("taskId",taskId),{
+            "status":newStatus
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (res.status === 200) {
+          setShowTaskDetails(false)
+          const data = res?.data?.data;
+          console.log("ds", data);
+          setTasks(data);
+        }
+      } catch (error) {
+        alert(error);
+      }
   };
+
+   const getMyStats = async () => {
+     try {
+       const res = await axios.get(API_URL.VOLUNTEER_STATS, {
+         headers: {
+           Authorization: `Bearer ${token}`,
+         },
+       });
+       if (res.status === 200) {
+         const data = res?.data?.statistics;
+         console.log("st", data);
+         setStats(data);
+       }
+     } catch (error) {
+       alert(error);
+     }
+   };
 
 
     const getMyTasks = async () => {
@@ -92,10 +120,32 @@ const { fullname } = JSON.parse(user);
       }
     };
 
+       const getMyActivityLog = async () => {
+         try {
+           const res = await axios.get(API_URL.VOLUNTEER_ACTIVITY_LOG, {
+             headers: {
+               Authorization: `Bearer ${token}`,
+             },
+           });
+           if (res.status === 200) {
+             const data = res?.data?.data;
+             setActivityLog(data)
+             console.log("al", data);
+            
+           }
+         } catch (error) {
+           alert(error);
+         }
+       };
+
     useEffect(()=>{
+      getMyStats();
       getMyTasks();
+      getMyActivityLog();
     },[])
-console.log('vol',tasks)
+
+    
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
       {/* Header */}
@@ -127,7 +177,7 @@ console.log('vol',tasks)
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800">
-                    {fullname?.firstname+" "+ fullname?.lastname}
+                    {fullname?.firstname + " " + fullname?.lastname}
                   </p>
                   <p className="text-xs text-gray-500">Verified Volunteer</p>
                 </div>
@@ -149,7 +199,9 @@ console.log('vol',tasks)
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold mb-2">Welcome back, Rahul! 🚚</h2>
+            <h2 className="text-3xl font-bold mb-2">
+              Welcome back, {fullname?.firstname + " " + fullname?.lastname}! 🚚
+            </h2>
             <p className="text-emerald-50 mb-6">
               Thank you for being a hero! Your efforts make a real difference in
               our community.
@@ -157,34 +209,91 @@ console.log('vol',tasks)
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
                 <Award className="w-5 h-5" />
-                <span className="font-semibold">Level 5 Volunteer</span>
+                <span className="font-semibold">
+                  Level {stats?.level} Volunteer
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <TrendingUp className="w-5 h-5" />
-                <span className="font-semibold">350 Points Earned</span>
+                <span className="font-semibold">
+                  {stats?.totalPoints} Points Earned
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5" />
+                <span className="font-semibold">
+                  {stats?.pointsNeededForNextLevel} points needed to reach Level{" "}
+                  {stats?.nextLevel}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          {/* Assigned */}
+          <div className="bg-white rounded-xl p-6 h-44 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-blue-500 p-3 rounded-lg text-blue-200`}>
+                <NotebookPen />
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
-          ))}
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalTasksAssigned}
+            </h3>
+            <p className="text-sm text-gray-500">Total Task Assigned</p>
+          </div>
+          {/* Assigned */}
+          <div className="bg-white rounded-xl p-6 h-44 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-yellow-500 p-3 rounded-lg text-yellow-200`}>
+                <CheckCircle />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalTasksAccepted}
+            </h3>
+            <p className="text-sm text-gray-500">Accepted</p>
+          </div>
+          {/* In Transit */}
+          <div className="bg-white rounded-xl p-6 h-44 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-orange-500 p-3 rounded-lg text-orange-200`}>
+                <Truck />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalTasksInTransit}
+            </h3>
+            <p className="text-sm text-gray-500">In Transit</p>
+          </div>
+
+          {/* Completed */}
+          <div className="bg-white rounded-xl p-6 h-44 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-green-500 p-3 rounded-lg text-green-200`}>
+                <PackageCheck />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalTasksCompleted}
+            </h3>
+            <p className="text-sm text-gray-500">Completed</p>
+          </div>
+
+          {/* Completed */}
+          <div className="bg-white rounded-xl p-6 h-44 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-purple-500 p-3 rounded-lg text-purple-200`}>
+                <Award />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats.totalPoints}
+            </h3>
+            <p className="text-sm text-gray-500">Total Points</p>
+          </div>
         </div>
 
         {/* Notifications Bar */}
@@ -192,20 +301,27 @@ console.log('vol',tasks)
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-800 flex items-center">
               <Mail className="w-5 h-5 mr-2 text-blue-500" />
-              Recent Notifications
+              Recent Tasks
             </h3>
           </div>
           <div className="space-y-3">
-            {notifications.map((notif, index) => (
+            {stats?.recentTasks?.slice(-5)?.reverse()?.map((rc, index) => (
               <div
                 key={index}
                 className="flex items-start space-x-3 p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
               >
-                <div className="flex-1">
-                  <p className="text-sm text-gray-800 font-semibold">
-                    {notif.message}
+                <div className="flex space-x-2 items-end">
+                  {getStatusIcon(rc?.status)}
+                  <p className="text-sm text-gray-500 mt-1">{rc?.quantity}</p>
+                  <p className="text-sm text-gray-500 font-semibold">
+                    {rc?.itemName} are
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                  <p className="text-xs text-gray-500 mt-1">{rc?.status} </p>
+                  {rc?.status === "delivered" && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      at {new Date(rc?.completedAt).toLocaleString()}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -281,89 +397,93 @@ console.log('vol',tasks)
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {tasks.map((task, index) => (
-                  <tr
-                    key={index}
-                    className="hover:bg-emerald-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-emerald-600">
-                        {task.taskId}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        {task.type === "Pickup" ? (
-                          <Package className="w-4 h-4 text-blue-500" />
-                        ) : (
-                          <Truck className="w-4 h-4 text-orange-500" />
-                        )}
-                        <span className="text-gray-800">{task.type}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-gray-800">{task.taskName}</span>
-                      <p className="text-xs text-gray-500">
-                        Qty: {task.quantity}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-start space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <span className="text-sm text-gray-600">
-                          {task.location}
+                {tasks.length > 0 &&
+                  tasks?.map((task, index) => (
+                    <tr
+                      key={index}
+                      className="hover:bg-emerald-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-emerald-600">
+                          {task.taskId}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-gray-800">{new Date(task.scheduledDate).toLocaleDateString()}</p>
-                      <p className="text-xs text-gray-500">{task.time}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityBadge(
-                          task.priority
-                        )}`}
-                      >
-                        {task.priority}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(task.status)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          {task.type === "Pickup" ? (
+                            <Package className="w-4 h-4 text-blue-500" />
+                          ) : (
+                            <Truck className="w-4 h-4 text-orange-500" />
+                          )}
+                          <span className="text-gray-800">{task.type}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-gray-800">{task.taskName}</span>
+                        <p className="text-xs text-gray-500">
+                          Qty: {task.quantity}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-start space-x-2">
+                          <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                          <span className="text-sm text-gray-600">
+                            {task.location}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-800">
+                          {new Date(task.scheduledDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-gray-500">{task.time}</p>
+                      </td>
+                      <td className="px-6 py-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(
-                            task.status
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityBadge(
+                            task.priority
                           )}`}
                         >
-                          {task.status}
+                          {task.priority}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => {
-                            setSelectedTask(task);
-                            setShowTaskDetails(true);
-                          }}
-                          className="px-3 py-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-semibold"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedTask(task);
-                            setShowEscalate(true);
-                          }}
-                          className="px-3 py-1 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
-                        >
-                          Issue
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          {getStatusIcon(task.status)}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(
+                              task.status
+                            )}`}
+                          >
+                            {task.status}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              setSelectedTask(task);
+                              console.log("vol", task);
+                              setShowTaskDetails(true);
+                            }}
+                            className="px-3 py-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-semibold"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setShowEscalate(true);
+                            }}
+                            className="px-3 py-1 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+                          >
+                            Issue
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -388,21 +508,32 @@ console.log('vol',tasks)
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       <span className="font-semibold text-emerald-600">
-                        {log.id}
+                        {log.details.taskId}
                       </span>
                       <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                        {log.action}
+                        {log.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-800">{log.item}</p>
+                    <p className="text-sm text-gray-800 capitalize">
+                      {log.details.itemName}
+                    </p>
                     <p className="text-xs text-gray-500">
-                      {log.date} at {log.time}
+                      {new Date(log.updatedAt).toLocaleTimeString()}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(log.updatedAt).toLocaleDateString("en-us", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-purple-600">
-                      +{log.points}
-                    </p>
+                    <div className="text-lg font-bold text-purple-600 flex items-center">
+                      <div> {log.status === "in_transit" ? 7.5 : 7.5} </div>
+                      <div className="flex items-center">+</div>
+                    </div>
                     <p className="text-xs text-gray-500">points</p>
                   </div>
                 </div>
@@ -491,25 +622,46 @@ console.log('vol',tasks)
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() =>
-                      updateTaskStatus(selectedTask.id, "collected")
+                      updateTaskStatus(selectedTask.taskId, "accepted")
                     }
-                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm font-semibold"
+                    disabled={["in_transit", "accepted", "delivered"].includes(
+                      selectedTask.status
+                    )}
+                    className={`"px-4 py-2 text-white rounded-lg  transition-colors text-sm font-semibold" ${
+                      ["in_transit", "accepted", "delivered"].includes(
+                        selectedTask.status
+                      )
+                        ? "bg-gray-500 hover:bg-gray-600"
+                        : "bg-purple-500 hover:bg-purple-600"
+                    }`}
                   >
-                    Mark Collected
+                    Mark Accepted
                   </button>
                   <button
                     onClick={() =>
-                      updateTaskStatus(selectedTask.id, "in-transit")
+                      updateTaskStatus(selectedTask.taskId, "in_transit")
                     }
-                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+                    disabled={["in_transit", "delivered"].includes(
+                      selectedTask.status
+                    )}
+                    className={`"px-4 py-2 text-white rounded-lg  transition-colors text-sm font-semibold" ${
+                      ["in_transit", "delivered"].includes(selectedTask.status)
+                        ? "bg-gray-500 hover:bg-gray-600"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    }`}
                   >
                     In Transit
                   </button>
                   <button
                     onClick={() =>
-                      updateTaskStatus(selectedTask.id, "delivered")
+                      updateTaskStatus(selectedTask.taskId, "delivered")
                     }
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold col-span-2"
+                    disabled={["delivered"].includes(selectedTask.status)}
+                    className={`"px-4 py-2 text-white rounded-lg  transition-colors text-sm font-semibold" ${
+                      ["delivered"].includes(selectedTask.status)
+                        ? "bg-gray-500 hover:bg-gray-600"
+                        : "bg-green-500 hover:bg-green-600"
+                    }`}
                   >
                     Mark Delivered
                   </button>
@@ -538,7 +690,7 @@ console.log('vol',tasks)
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              Report Issue - {selectedTask.id}
+              Report Issue - {selectedTask.taskId}
             </h3>
             <div className="space-y-4">
               <div>

@@ -17,6 +17,7 @@ import {
   PieChart,
   UserPlus,
   ClipboardList,
+  X,
 } from "lucide-react";
 import axios from "axios";
 import { API_URL } from "../constant/api";
@@ -30,36 +31,11 @@ const NGODash = () => {
   const [showRequest, setShowRequest] = useState(false);
   const [requests, setRequests] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
+  const [stats, setStats] = useState({});
   const [stat, setStat] = useState([]);
   const [pendingDonations, setPendingDonations] = useState([]);
   const token = localStorage.getItem("token");
 
-  const stats = [
-    {
-      label: "Pending Donations",
-      value: "18",
-      icon: Clock,
-      color: "bg-yellow-500",
-    },
-    {
-      label: "Items Distributed",
-      value: "156",
-      icon: CheckCircle,
-      color: "bg-green-500",
-    },
-    {
-      label: "Active Volunteers",
-      value: "12",
-      icon: Users,
-      color: "bg-blue-500",
-    },
-    {
-      label: "Total Receivers",
-      value: "89",
-      icon: TrendingUp,
-      color: "bg-purple-500",
-    },
-  ];
 
   const distributions = [
     {
@@ -138,9 +114,7 @@ const NGODash = () => {
       });
       if (res.status === 200) {
         const data = res?.data;
-
         setPendingDonations(data.donations);
-        setStat(data.statistics);
       }
     } catch (error) {
       alert(error);
@@ -185,6 +159,22 @@ const NGODash = () => {
     }
   };
 
+  const getMyStats = async () => {
+    try {
+      const res = await axios.get(API_URL.NGO_STATS, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.status === 200) {
+        const data = res.data.statistics;
+        setStats(data)
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   const getAllVolunteers = async () => {
     try {
       const res = await axios.get(API_URL.NGO_ALL_VOLUNTEERS, {
@@ -201,6 +191,7 @@ const NGODash = () => {
   };
 
   useEffect(() => {
+    getMyStats();
     getPendingDonations();
     getRequests();
     getAllVolunteers();
@@ -221,7 +212,9 @@ const NGODash = () => {
         }
       );
       if (res.status === 200) {
-        const data = res.data.data;
+       alert("Request Approved Successfully")
+       setRequests(false);
+       window.location.reload();
       }
     } catch (error) {
       alert(error);
@@ -235,8 +228,9 @@ const NGODash = () => {
          API_URL.NGO_ASSIGN_TASK.replace("requestId", assignDetail?.requestId),
          {
             volunteerId: assignDetail?.volunteerId,
-           scheduledDate: Date.now(),
-           notes:"Task is assigned"
+           scheduledDate: assignDetail?.scheduledDate,
+           priority:assignDetail?.priority,
+           notes:assignDetail?.notes
          },
          {
            headers: {
@@ -244,9 +238,10 @@ const NGODash = () => {
            },
          }
        );
-       if (res.status === 200) {
-         const data = res.data.data;
+       if (res.status === 201) {
+         alert("Task Assigned Successfully")
          setShowAssignVolunteer(false)
+         setAssignDetail({})
          window.location.reload();
        }
       }
@@ -262,7 +257,7 @@ const NGODash = () => {
 
   console.log(
     "dse",
-    volunteers
+    stats
   );
 
   return (
@@ -377,22 +372,57 @@ const NGODash = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
+          {/* Pending Donations */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-yellow-500 p-3 rounded-lg`}>
+                <Clock className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
-          ))}
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.donations?.pending}
+            </h3>
+            <p className="text-sm text-gray-500">Pending Donations</p>
+          </div>
+
+          {/* Items Distributed */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-green-500 p-3 rounded-lg`}>
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.itemsDistributed?.total}
+            </h3>
+            <p className="text-sm text-gray-500">Items Distributed</p>
+          </div>
+
+          {/* Total Volunteers */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-blue-500 p-3 rounded-lg`}>
+                <User className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.volunteers?.total}
+            </h3>
+            <p className="text-sm text-gray-500">Total Volunteers</p>
+          </div>
+
+          {/* Total Receivers */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-purple-500 p-3 rounded-lg`}>
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.receivers?.total}
+            </h3>
+            <p className="text-sm text-gray-500">Total Receivers</p>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -463,6 +493,7 @@ const NGODash = () => {
               <tbody className="divide-y divide-gray-200">
                 {pendingDonations
                   .filter((el) => el.status !== "approved")
+                  .reverse()
                   ?.map((donation, index) => (
                     <tr
                       key={index}
@@ -484,7 +515,7 @@ const NGODash = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-2">
                           <Package className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-800">
+                          <span className="text-gray-800 capitalize">
                             {donation.itemType}
                           </span>
                         </div>
@@ -510,14 +541,14 @@ const NGODash = () => {
                       <td className="px-6 py-4">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => acceptDonations(donation.donationId)}
+                            onClick={() => acceptDonations(donation._id)}
                             className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold"
                           >
                             Accept
                           </button>
-                          <button className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold">
+                          {/* <button className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold">
                             Reject
-                          </button>
+                          </button>*/}
                         </div>
                       </td>
                     </tr>
@@ -582,24 +613,35 @@ const NGODash = () => {
               </h3>
             </div>
             <div className="p-6 space-y-4">
-              {distributions.map((dist, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-emerald-600">
-                      {dist.id}
-                    </span>
-                    <span className="text-xs text-gray-500">{dist.date}</span>
+              {stats?.recentActivity?.recentDistributions?.map(
+                (dist, index) => (
+                  <div
+                    key={index}
+                    className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-emerald-600 capitalize">
+                        {dist.type}
+                      </span>
+                      <span className="font-semibold text-emerald-600 capitalize">
+                        {dist.itemType}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(dist.deliveredAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-800 mb-1">
+                      {dist.item} × {dist.quantity}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      To: {dist.deliveredTo}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      By: {dist.deliveredBy}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-800 mb-1">
-                    {dist.item} × {dist.quantity}
-                  </p>
-                  <p className="text-xs text-gray-600">To: {dist.receiver}</p>
-                  <p className="text-xs text-gray-600">By: {dist.volunteer}</p>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </div>
         </div>
@@ -639,7 +681,7 @@ const NGODash = () => {
 
       {/* Assign Volunteer Modal */}
       {showAssignVolunteer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
               Assign Volunteer
@@ -654,13 +696,45 @@ const NGODash = () => {
                   name={"requestId"}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
                 >
-                  {requests.map((request, el) => {
-                    return (
-                      <option value={request._id} key={el}>
-                        {request._id} - Winter Clothes
-                      </option>
-                    );
-                  })}
+                  <option>Select Donation Request</option>
+                  {requests
+                    ?.filter((rc) => rc.status === "approved")
+                    ?.map((request, el) => {
+                      return (
+                        <option
+                          className="capitalize"
+                          value={request._id}
+                          key={el}
+                        >
+                          <span className="font-semibold text-green-500">
+                            {request.donationId.donationId}
+                          </span>{" "}
+                          -{" "}
+                          <span>
+                            {request.donationId.itemType
+                              .charAt(0)
+                              .toUpperCase() +
+                              request.donationId.itemType.slice(1)}
+                          </span>
+                          {" | "}
+                          <span>{request.donationId.quantity}</span>
+                          {" | "}
+                          <span>
+                            {request.donationId.condition
+                              .charAt(0)
+                              .toUpperCase() +
+                              request.donationId.condition.slice(1)}
+                          </span>
+                          {" | "}
+                          <span>
+                            Requested By:-{" "}
+                            {request.receiverId.fullname.firstname +
+                              " " +
+                              request.receiverId.fullname.lastname}
+                          </span>
+                        </option>
+                      );
+                    })}
                 </select>
               </div>
               <div>
@@ -689,11 +763,30 @@ const NGODash = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Priority
                 </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
-                  <option>High</option>
-                  <option>Medium</option>
-                  <option>Low</option>
+                <select
+                  name="priority"
+                  onChange={handleDetail}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+                >
+                  <option>Select Priority</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Schedule Date
+                </label>
+                <input
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                  name="scheduledDate"
+                  onChange={handleDetail}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+                  placeholder="Choose the date"
+                />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -701,6 +794,8 @@ const NGODash = () => {
                 </label>
                 <textarea
                   rows="3"
+                  name="notes"
+                  onChange={handleDetail}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
                   placeholder="Additional instructions..."
                 ></textarea>
@@ -813,13 +908,15 @@ const NGODash = () => {
       {/* Reports Modal */}
       {showRequest ||
         (activeTab === "request" && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-8 max-w-4xl w-full shadow-2xl transform transition-all">
               <div className="flex w-full justify-between items-baseline">
                 <h3 className="text-2xl font-bold text-gray-800 mb-6">
                   Request Made By Receiver
                 </h3>
-                <button onClick={() => setActiveTab("overview")}>X</button>
+                <button onClick={() => setActiveTab("overview")}>
+                  <X />
+                </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -855,7 +952,7 @@ const NGODash = () => {
                         >
                           <td className="px-6 py-4">
                             <span className="font-semibold text-emerald-600">
-                              {donation?.donationId?._id}
+                              {donation?.donationId?.donationId}
                             </span>
                           </td>
                           <td className="px-6 py-4">

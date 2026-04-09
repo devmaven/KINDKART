@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Gift, Bell, Clock, CheckCircle, Package, User, LogOut, Plus, Search, Filter, FileText, Truck } from 'lucide-react';
+import { Heart, Gift, Bell, Clock, CheckCircle, Package, User, LogOut, Plus, Search, Filter, FileText, Truck, GitPullRequestDraft, HandCoins, ListTodo, GalleryVerticalEnd } from 'lucide-react';
 import { Link } from "react-router-dom";
 import {API_URL} from "../constant/api"
 import axios from 'axios';
@@ -9,6 +9,7 @@ const ReceiverDash = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [availDonations,setAvailDonations]=useState([])
+  const [stats, setStats]= useState({})
   const user = localStorage.getItem("user");
   const token = localStorage.getItem("token");
     const { fullname } = JSON.parse(user);
@@ -38,8 +39,31 @@ const ReceiverDash = () => {
     }
   };
 
+  const getMyStats = async () => {
+    try {
+      const res = await axios.get(
+        API_URL.RECEIVER_STATS,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        const data = res?.data?.statistics;
+        console.log("dst", data);
+        setStats(data)
+
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+
   useEffect(()=>{
-    getAvailDonations()
+    getMyStats();
+    getAvailDonations();
   },[])
 
   const requestDonation = async (id) => {
@@ -58,7 +82,7 @@ const ReceiverDash = () => {
         }
       );
       if (res.status === 201) {
-        alert(res.message)
+        alert("Request Placed Successfully")
         window.location.reload();
 
 
@@ -68,7 +92,7 @@ const ReceiverDash = () => {
     }
   };
 
-  const stats = [
+  const statu = [
     { label: 'Active Requests', value: '5', icon: Package, color: 'bg-emerald-500' },
     { label: 'Items Received', value: '12', icon: CheckCircle, color: 'bg-green-500' },
     { label: 'Pending Approval', value: '3', icon: Clock, color: 'bg-yellow-500' },
@@ -137,10 +161,7 @@ const ReceiverDash = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800">
-                    
-                    
-                    {fullname?.firstname+" "+
-                    fullname?.lastname}
+                    {fullname?.firstname + " " + fullname?.lastname}
                   </p>
                   <p className="text-xs text-gray-500">Verified Receiver</p>
                 </div>
@@ -206,7 +227,9 @@ const ReceiverDash = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold mb-2">Welcome! 🎁</h2>
+            <h2 className="text-3xl font-bold mb-2">
+              Welcome {fullname?.firstname + " " + fullname?.lastname}! 🎁
+            </h2>
             <p className="text-emerald-50 mb-6">
               We're here to help connect you with the resources you need!
             </p>
@@ -222,22 +245,57 @@ const ReceiverDash = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
+          {/* Active Requests */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-blue-600 p-3 rounded-lg`}>
+                <GitPullRequestDraft className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
-          ))}
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.activeRequests}
+            </h3>
+            <p className="text-sm text-gray-500">Active Requests</p>
+          </div>
+
+          {/* Item Recieved */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-green-600 p-3 rounded-lg`}>
+                <HandCoins className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.totalItemsReceived}
+            </h3>
+            <p className="text-sm text-gray-500">Item Received</p>
+          </div>
+
+          {/* Pending Approval */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-orange-600 p-3 rounded-lg`}>
+                <ListTodo className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.pendingApprovals}
+            </h3>
+            <p className="text-sm text-gray-500">Pending Approvals</p>
+          </div>
+
+          {/* Total Requests */}
+          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-purple-600 p-3 rounded-lg`}>
+                <GalleryVerticalEnd className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.totalRequests}
+            </h3>
+            <p className="text-sm text-gray-500">Total Requests</p>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -281,7 +339,7 @@ const ReceiverDash = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                    Request ID
+                    Donation ID
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                     Item Type
@@ -311,7 +369,7 @@ const ReceiverDash = () => {
                   >
                     <td className="px-6 py-4">
                       <span className="font-semibold text-emerald-600">
-                        {donation.donationId._id}
+                        {donation.donationId.donationId}
                       </span>
                     </td>
                     <td className="px-6 py-4">

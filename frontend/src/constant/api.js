@@ -14,6 +14,7 @@ export const API_URL = {
     UPDATEDONATIONS: `${BASE_API}/donations/my-donations/update/donorId`,
     DELETE_DONATIONS: `${BASE_API}/donations/my-donations/delete/id`,
     ADD_DONATIONS:`${BASE_API}/donations/create`,
+    DONOR_STATS: `${BASE_API}/donations/my-stats`,
 
     //NGO
     NGO_ALL_DONATIONS:`${BASE_API}/ngo/all-donations`,
@@ -22,13 +23,18 @@ export const API_URL = {
     NGO_RESPOND_REQUEST: `${BASE_API}/ngo/respond-request/requestId`,
     NGO_ALL_VOLUNTEERS: `${BASE_API}/ngo/all-volunteers`,
     NGO_ASSIGN_TASK: `${BASE_API}/ngo/assign-task/requestId`,
+    NGO_STATS: `${BASE_API}/ngo/my-stats`,
     
 
     //RECEIVER
     RECEIVER_AVAIL_DONATIONS: `${BASE_API}/receiver/available-donations/ngoId`,
     REQUEST_DONATION: `${BASE_API}/receiver/request-donation/assignedId`,
+    RECEIVER_STATS: `${BASE_API}/receiver/my-stats`,
 
     //VOLUNTEER
     VOLUNTEER_MY_TASKS: `${BASE_API}/volunteer/my-tasks`,
+    VOLUNTEER_UPDATE_TASK: `${BASE_API}/volunteer/update-task/taskId`,
+    VOLUNTEER_ACTIVITY_LOG: `${BASE_API}/volunteer/my-activity-log`,
+    VOLUNTEER_STATS: `${BASE_API}/volunteer/my-stats`,
 
 }
