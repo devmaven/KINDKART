@@ -68,7 +68,7 @@ export default function Login() {
         />
 
         <p className="text-right mt-[5px] mb-[20px]">
-          <Link to="/ForgotPassword" className="text-[#2563eb] text-[13px]">
+          <Link to="/forgot-password" className="text-[#2563eb] text-[13px]">
             Forgot password?
           </Link>
         </p>
